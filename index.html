@@ -567,7 +567,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           </div>
           原始内容
-          <span class="nav-badge" v-if="stats.total">{{ stats.total }}</span>
+          <span class="nav-badge" v-if="rawItems.length">{{ rawItems.length }}</span>
         </a>
 
         <a :class="['nav-item', currentTab === 'processed' ? 'active' : '']" @click="currentTab = 'processed'">
@@ -575,7 +575,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
           </div>
           加工内容
-          <span class="nav-badge" v-if="stats.processed">{{ stats.processed }}</span>
+          <span class="nav-badge" v-if="processedItems.length">{{ processedItems.length }}</span>
         </a>
 
         <a :class="['nav-item', currentTab === 'display' ? 'active' : '']" @click="currentTab = 'display'">
@@ -583,6 +583,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
           展示内容
+          <span class="nav-badge" v-if="displayItems.length">{{ displayItems.length }}</span>
         </a>
 
         <a :class="['nav-item', currentTab === 'qa' ? 'active' : '']" @click="currentTab = 'qa'">
@@ -1447,7 +1448,7 @@
           if (!supabase) return showToast('请先配置 Supabase');
           loading.raw = true;
           try {
-            let query = supabase.from(`raw_items${settings.tableSuffix}`).select('*').order('created_at', { ascending: false }).limit(50);
+            let query = supabase.from(`raw_items${settings.tableSuffix}`).select('*').order('created_at', { ascending: false });
             
             if (rawFilters.date) {
               const start = new Date(rawFilters.date);
@@ -1531,7 +1532,7 @@
           if (!supabase) return showToast('请先配置 Supabase');
           loading.processed = true;
           try {
-            let query = supabase.from(`processed_items${settings.tableSuffix}`).select('*').order('generated_at', { ascending: false }).limit(50);
+            let query = supabase.from(`processed_items${settings.tableSuffix}`).select('*').order('generated_at', { ascending: false });
             if (processedFilters.category) query = query.eq('category', processedFilters.category);
             if (processedFilters.date) query = query.eq('snapshot_date', processedFilters.date);
             if (processedFilters.minAha) query = query.gte('aha_index', Number(processedFilters.minAha));
@@ -1597,7 +1598,7 @@
           if (!supabase) return showToast('请先配置 Supabase');
           loading.display = true;
           try {
-            let query = supabase.from(`display_items${settings.tableSuffix}`).select('*').order('rank', { ascending: true }).limit(100);
+            let query = supabase.from(`display_items${settings.tableSuffix}`).select('*').order('rank', { ascending: true });
             if (displayFilters.date) query = query.eq('snapshot_date', displayFilters.date);
             if (displayFilters.category) query = query.eq('category', displayFilters.category);
             
