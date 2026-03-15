@@ -817,7 +817,9 @@
                   查看原文
                 </a>
                 <button class="btn-secondary">下线</button>
-                <button class="btn-green">提交质检</button>
+                <button class="btn-green" @click="submitSingleQA" :disabled="qa.running">
+                  {{ qa.running ? '质检中...' : '提交质检' }}
+                </button>
                 <button class="btn-primary">发布</button>
               </div>
             </div>
@@ -1802,28 +1804,52 @@
               return;
             }
 
+            // 获取生效的质检提示词
+            const { data: promptData } = await supabase
+              .from(`prompts${settings.tableSuffix}`)
+              .select('*')
+              .eq('is_active', true)
+              .ilike('name', '%质检%')
+              .limit(1);
+              
+            let promptTemplate = `请作为资深内容编辑，对以下 AI 处理后的内容进行质检。
+原始内容标题: {original_title}
+处理后标题: {processed_title}
+摘要: {summary}
+Aha Index: {aha_index}
+
+请返回 JSON 格式：
+{
+  "titleScore": 1-5,
+  "summaryScore": 1-5,
+  "ahaReasonable": "偏高" | "合理" | "偏低",
+  "push": true/false,
+  "reason": "一句话理由"
+}`;
+            if (promptData && promptData.length > 0) {
+              promptTemplate = promptData[0].content;
+            }
+
             qa.total = data.length;
             qa.current = 0;
 
             for (const item of data) {
-              const prompt = `
-                请作为资深内容编辑，对以下 AI 处理后的内容进行质检。
-                原始内容标题: ${item.raw_title}
-                处理后标题: ${item.processed_title}
-                摘要: ${item.summary}
-                Aha Index: ${item.aha_index}
-                
-                请返回 JSON 格式：
-                {
-                  "titleScore": 1-5,
-                  "summaryScore": 1-5,
-                  "ahaReasonable": "偏高" | "合理" | "偏低",
-                  "push": true/false,
-                  "reason": "一句话理由"
-                }
-              `;
+              const variables = {
+                original_title: item.raw_title || '',
+                original_content: '', // 批量质检时可能没有原始内容详情
+                processed_title: item.processed_title || '',
+                category: item.category || '',
+                summary: item.summary || '',
+                expert_insight: item.expert_insight || '',
+                aha_index: item.aha_index || ''
+              };
+
+              const promptText = promptTemplate.replace(/\{(\w+)\}/g, (match, key) => {
+                return variables[key] !== undefined ? variables[key] : match;
+              });
+
               try {
-                const res = await callKimi(prompt);
+                const res = await callKimi(promptText);
                 const pass = res.titleScore >= 3 && res.summaryScore >= 3 && res.push;
                 const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, ...res, pass, date: new Date().toLocaleDateString() };
                 qa.results.push(result);
@@ -1839,6 +1865,82 @@
             activeQaSources.value = dynamicQaSourceOptions.value.map(s => s.name);
           } catch (e) {
             showToast(e.message);
+          } finally {
+            qa.running = false;
+          }
+        };
+
+        const submitSingleQA = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          if (!selectedProcessedItem.value) return showToast('请先选择一条加工内容');
+          
+          qa.running = true;
+          try {
+            // 获取生效的质检提示词
+            const { data: promptData } = await supabase
+              .from(`prompts${settings.tableSuffix}`)
+              .select('*')
+              .eq('is_active', true)
+              .ilike('name', '%质检%')
+              .limit(1);
+              
+            let promptTemplate = `请作为资深内容编辑，对以下 AI 处理后的内容进行质检。
+原始内容标题: {original_title}
+处理后标题: {processed_title}
+摘要: {summary}
+Aha Index: {aha_index}
+
+请返回 JSON 格式：
+{
+  "titleScore": 1-5,
+  "summaryScore": 1-5,
+  "ahaReasonable": "偏高" | "合理" | "偏低",
+  "push": true/false,
+  "reason": "一句话理由"
+}`;
+            if (promptData && promptData.length > 0) {
+              promptTemplate = promptData[0].content;
+            }
+
+            const item = selectedProcessedItem.value;
+            const rawItem = selectedProcessedRawItem.value || {};
+            
+            const variables = {
+              original_title: rawItem.title || item.raw_title || '',
+              original_content: rawItem.content || rawItem.body_text || '',
+              processed_title: item.processed_title || '',
+              category: item.category || '',
+              summary: item.summary || '',
+              expert_insight: item.expert_insight || '',
+              aha_index: item.aha_index || ''
+            };
+
+            const promptText = promptTemplate.replace(/\{(\w+)\}/g, (match, key) => {
+              return variables[key] !== undefined ? variables[key] : match;
+            });
+
+            const res = await callKimi(promptText);
+            const pass = res.titleScore >= 3 && res.summaryScore >= 3 && res.push;
+            const result = { 
+              id: item.item_id, 
+              title: item.processed_title, 
+              source_name: item.source_name, 
+              ...res, 
+              pass, 
+              date: new Date().toLocaleDateString() 
+            };
+            
+            const existingIdx = qa.results.findIndex(r => r.id === result.id);
+            if (existingIdx >= 0) {
+              qa.results[existingIdx] = result;
+            } else {
+              qa.results.push(result);
+            }
+            
+            showToast('质检完成！可在 AI 质检 tab 查看结果');
+          } catch (e) {
+            console.error(e);
+            showToast('质检失败: ' + e.message);
           } finally {
             qa.running = false;
           }
@@ -2033,7 +2135,7 @@
           toggleProcessedSource, toggleAllProcessedSources, activeProcessedSources, dynamicProcessedSourceOptions, filteredProcessedItems,
           displayItems, displayFilters, loadDisplayItems, selectedDisplayItem,
           toggleDisplaySource, toggleAllDisplaySources, activeDisplaySources, dynamicDisplaySourceOptions, filteredDisplayItems,
-          qa, startQA, exportQA, selectedQaResult,
+          qa, startQA, submitSingleQA, exportQA, selectedQaResult,
           toggleQaSource, toggleAllQaSources, activeQaSources, dynamicQaSourceOptions, filteredQaResults,
           prompts, selectedPrompt, createNewPrompt, selectPrompt, savePromptAsNew, setActivePrompt,
           promptTab, promptVariables,
