@@ -449,6 +449,98 @@
       0% { opacity: 1; }
       50%, 100% { opacity: 0.2; }
     }
+
+    /* ── DATE NAV ── */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      margin-right: 8px;
+    }
+    .date-nav-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      border-radius: 7px;
+      transition: all 0.15s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .date-nav-btn:hover {
+      background: var(--surface3);
+      color: var(--text);
+    }
+    .date-display {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      padding: 0 8px;
+      min-width: 85px;
+      text-align: center;
+    }
+    .date-picker-wrap {
+      position: relative;
+    }
+    .hidden-picker {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* ── SOURCE TAGS ── */
+    .source-tags-container {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .source-tags-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .source-tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .source-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text-dim);
+      background: var(--surface2);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .source-tag:hover {
+      border-color: var(--border-bright);
+      color: var(--text-muted);
+    }
+    .source-tag.active {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
   </style>
 
 </head>
@@ -482,6 +574,13 @@
           </div>
           加工内容
           <span class="nav-badge" v-if="stats.processed">{{ stats.processed }}</span>
+        </a>
+
+        <a :class="['nav-item', currentTab === 'display' ? 'active' : '']" @click="currentTab = 'display'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          展示内容
         </a>
 
         <a :class="['nav-item', currentTab === 'qa' ? 'active' : '']" @click="currentTab = 'qa'">
@@ -525,21 +624,24 @@
       <div class="page active" v-if="currentTab === 'raw'">
         <div class="two-pane">
           <div class="list-pane">
-            <div class="list-pane-header">
-              <div class="list-pane-title">原始内容</div>
-              <button class="btn-new" @click="loadRawItems">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                刷新
-              </button>
-            </div>
             <div class="list-search">
-              <div class="search-wrap">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input class="search-input" type="date" v-model="rawFilters.date" @change="loadRawItems">
+              <div class="date-nav" style="margin-right:0; flex:1;">
+                <div class="date-nav-btn" @click="changeDate('raw', -1)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  前一天
+                </div>
+                <div class="date-display" style="flex:1">{{ rawFilters.date }}</div>
+                <div class="date-picker-wrap">
+                  <input class="hidden-picker" type="date" v-model="rawFilters.date" @change="loadRawItems">
+                  <div class="date-nav-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    选择日期
+                  </div>
+                </div>
               </div>
             </div>
             <div class="item-list">
-              <div v-for="item in rawItems" :key="item.id" 
+              <div v-for="item in filteredRawItems" :key="item.id" 
                    :class="['content-card', selectedRawItem?.id === item.id ? 'active' : '']"
                    @click="selectedRawItem = item">
                 <div class="card-top">
@@ -554,7 +656,23 @@
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     {{ new Date(item.created_at).toLocaleDateString() }}
                   </div>
-                  <div class="meta-pill">{{ item.source_name }}</div>
+                </div>
+              </div>
+              <div v-if="filteredRawItems.length === 0 && !loading.raw" class="p-10 text-center text-text-dim text-xs">
+                暂无匹配内容
+              </div>
+            </div>
+            <!-- SOURCE FILTER TAGS -->
+            <div class="source-tags-container" v-if="dynamicSourceOptions.length > 0">
+              <div class="source-tags-label">
+                <span>来源过滤 (当前列表)</span>
+                <span @click="toggleAllSources" class="cursor-pointer hover:text-accent transition-colors">全选/取消</span>
+              </div>
+              <div class="source-tags-list">
+                <div v-for="s in dynamicSourceOptions" :key="s.name" 
+                     :class="['source-tag', activeSources.includes(s.name) ? 'active' : '']"
+                     @click="toggleSource(s.name)">
+                  {{ s.name }} <span class="ml-1 opacity-60 font-normal">({{ s.count }})</span>
                 </div>
               </div>
             </div>
@@ -610,21 +728,24 @@
       <div class="page active" v-if="currentTab === 'processed'">
         <div class="two-pane">
           <div class="list-pane">
-            <div class="list-pane-header">
-              <div class="list-pane-title">加工内容</div>
-              <button class="btn-new" @click="loadProcessedItems">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                刷新
-              </button>
-            </div>
             <div class="list-search">
-              <div class="search-wrap">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input class="search-input" type="date" v-model="processedFilters.date" @change="loadProcessedItems">
+              <div class="date-nav">
+                <div class="date-nav-btn" @click="changeDate('processed', -1)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  前一天
+                </div>
+                <div class="date-display">{{ processedFilters.date }}</div>
+                <div class="date-picker-wrap">
+                  <input class="hidden-picker" type="date" v-model="processedFilters.date" @change="loadProcessedItems">
+                  <div class="date-nav-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    选择日期
+                  </div>
+                </div>
               </div>
             </div>
             <div class="item-list">
-              <div v-for="item in processedItems" :key="item.item_id" 
+              <div v-for="item in filteredProcessedItems" :key="item.item_id" 
                    :class="['content-card', selectedProcessedItem?.item_id === item.item_id ? 'active' : '']"
                    @click="selectedProcessedItem = item">
                 <div class="card-top">
@@ -635,6 +756,23 @@
                 <div class="card-meta">
                   <div class="meta-pill"><div class="dot-live"></div><span class="live-label">线上</span></div>
                   <div class="meta-pill">AHA {{ item.aha_index }}</div>
+                </div>
+              </div>
+              <div v-if="filteredProcessedItems.length === 0 && !loading.processed" class="p-10 text-center text-text-dim text-xs">
+                暂无匹配内容
+              </div>
+            </div>
+            <!-- SOURCE FILTER TAGS -->
+            <div class="source-tags-container" v-if="dynamicProcessedSourceOptions.length > 0">
+              <div class="source-tags-label">
+                <span>来源过滤 (当前列表)</span>
+                <span @click="toggleAllProcessedSources" class="cursor-pointer hover:text-accent transition-colors">全选/取消</span>
+              </div>
+              <div class="source-tags-list">
+                <div v-for="s in dynamicProcessedSourceOptions" :key="s.name" 
+                     :class="['source-tag', activeProcessedSources.includes(s.name) ? 'active' : '']"
+                     @click="toggleProcessedSource(s.name)">
+                  {{ s.name }} <span class="ml-1 opacity-60 font-normal">({{ s.count }})</span>
                 </div>
               </div>
             </div>
@@ -693,6 +831,126 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
             </div>
             <div class="text-sm font-bold tracking-tight">选择一条加工内容</div>
+            <div class="text-xs mt-1 opacity-50">从左侧列表选择一条内容查看详情</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 展示内容 -->
+      <div class="page active" v-if="currentTab === 'display'">
+        <div class="two-pane">
+          <div class="list-pane">
+            <div class="list-search">
+              <div class="date-nav">
+                <div class="date-nav-btn" @click="changeDate('display', -1)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  前一天
+                </div>
+                <div class="date-display">{{ displayFilters.date }}</div>
+                <div class="date-picker-wrap">
+                  <input class="hidden-picker" type="date" v-model="displayFilters.date" @change="loadDisplayItems">
+                  <div class="date-nav-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    选择日期
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="item-list">
+              <div v-for="item in filteredDisplayItems" :key="item.id" 
+                   :class="['content-card', selectedDisplayItem?.id === item.id ? 'active' : '']"
+                   @click="selectedDisplayItem = item">
+                <div class="card-top">
+                  <div class="card-title">{{ item.processed_title }}</div>
+                  <span class="card-tag tag-done">Rank {{ item.rank }}</span>
+                </div>
+                <div class="card-preview">{{ item.summary }}</div>
+                <div class="card-meta">
+                  <div class="meta-pill"><div class="dot-live"></div><span class="live-label">线上</span></div>
+                  <div class="meta-pill">AHA {{ item.aha_index }}</div>
+                  <div class="meta-pill" title="曝光">👁 {{ item.impressions || 0 }}</div>
+                  <div class="meta-pill" title="点击">🖱 {{ item.clicks || 0 }}</div>
+                </div>
+              </div>
+              <div v-if="filteredDisplayItems.length === 0 && !loading.display" class="p-10 text-center text-text-dim text-xs">
+                暂无匹配内容
+              </div>
+            </div>
+            <!-- SOURCE FILTER TAGS -->
+            <div class="source-tags-container" v-if="dynamicDisplaySourceOptions.length > 0">
+              <div class="source-tags-label">
+                <span>来源过滤 (当前列表)</span>
+                <span @click="toggleAllDisplaySources" class="cursor-pointer hover:text-accent transition-colors">全选/取消</span>
+              </div>
+              <div class="source-tags-list">
+                <div v-for="s in dynamicDisplaySourceOptions" :key="s.name" 
+                     :class="['source-tag', activeDisplaySources.includes(s.name) ? 'active' : '']"
+                     @click="toggleDisplaySource(s.name)">
+                  {{ s.name }} <span class="ml-1 opacity-60 font-normal">({{ s.count }})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DISPLAY DETAIL -->
+          <div class="detail-pane" v-if="selectedDisplayItem">
+            <div class="detail-topbar">
+              <div class="mini-stat">Rank <span class="mini-stat-val">{{ selectedDisplayItem.rank }}</span></div>
+              <div class="divider-v"></div>
+              <div class="mini-stat">AHA <span class="mini-stat-val" style="color:var(--green)">{{ selectedDisplayItem.aha_index }}</span></div>
+              <div class="divider-v"></div>
+              <div class="mini-stat">日期 <span class="mini-stat-val">{{ selectedDisplayItem.snapshot_date }}</span></div>
+            </div>
+            <div class="detail-header">
+              <div class="detail-title-row">
+                <div class="detail-title">{{ selectedDisplayItem.processed_title }}</div>
+                <span class="card-tag tag-done">展示中</span>
+              </div>
+              <div class="detail-actions">
+                <button class="btn-secondary">调整排序</button>
+                <button class="btn-primary">查看原文</button>
+              </div>
+            </div>
+            <div class="detail-body">
+              <div class="content-block">
+                <div class="block-label">实时数据</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                  <div class="qa-score-card">
+                    <div class="score-label">曝光 (Impression)</div>
+                    <div class="score-val" style="color:var(--text)">{{ selectedDisplayItem.impressions || 0 }}</div>
+                  </div>
+                  <div class="qa-score-card">
+                    <div class="score-label">点击 (Click)</div>
+                    <div class="score-val" style="color:var(--text)">{{ selectedDisplayItem.clicks || 0 }}</div>
+                  </div>
+                  <div class="qa-score-card">
+                    <div class="score-label">点击原文 (Original)</div>
+                    <div class="score-val" style="color:var(--text)">{{ selectedDisplayItem.clicks_original || 0 }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="content-block">
+                <div class="block-label">专家洞察</div>
+                <div class="block-text italic text-text-dim">"{{ selectedDisplayItem.expert_insight || '暂无专家洞察' }}"</div>
+              </div>
+              <div class="content-block">
+                <div class="block-label">摘要</div>
+                <div class="block-text">{{ selectedDisplayItem.summary }}</div>
+              </div>
+              <div class="content-block">
+                <div class="block-label">标签 & 关键词</div>
+                <div class="flex flex-wrap gap-2">
+                  <span v-for="tag in selectedDisplayItem.tags" :key="tag" class="version-tag">{{ tag }}</span>
+                  <span v-for="kw in selectedDisplayItem.keywords" :key="kw" class="version-tag" style="border-color:var(--accent-dim)">{{ kw }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="flex-1 flex flex-col items-center justify-center text-text-dim bg-dark-bg">
+            <div class="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-4 text-text-muted">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div class="text-sm font-bold tracking-tight">选择一条展示内容</div>
             <div class="text-xs mt-1 opacity-50">从左侧列表选择一条内容查看详情</div>
           </div>
         </div>
@@ -941,7 +1199,7 @@
   </div>
 
   <script>
-    const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
+        const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
 
     createApp({
       setup() {
@@ -1075,6 +1333,7 @@
           loadSourceOptions();
           if (currentTab.value === 'raw') loadRawItems();
           else if (currentTab.value === 'processed') loadProcessedItems();
+          else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
           showToast(`已切换至${isTest ? '测试' : '生产'}环境`);
         };
@@ -1087,8 +1346,11 @@
           loadSourceOptions();
           if (currentTab.value === 'raw') loadRawItems();
           else if (currentTab.value === 'processed') loadProcessedItems();
+          else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
         };
+
+        const todayStr = new Date().toISOString().split('T')[0];
 
         // Tab 1: Raw Items
         const rawItems = ref([]);
@@ -1098,21 +1360,72 @@
           const { title, body_text, content, ...rest } = selectedRawItem.value;
           return rest;
         });
-        const rawFilters = reactive({ date: '', source: '' });
-        const loading = reactive({ raw: false, processed: false });
+        const rawFilters = reactive({ date: todayStr });
+        const activeSources = ref([]); // Sources to SHOW
+        const loading = reactive({ raw: false, processed: false, display: false });
+
+        const dynamicSourceOptions = computed(() => {
+          const counts = {};
+          rawItems.value.forEach(item => {
+            const s = item.source_name || '未知';
+            counts[s] = (counts[s] || 0) + 1;
+          });
+          return Object.entries(counts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        });
+
+        const filteredRawItems = computed(() => {
+          if (activeSources.value.length === 0) return rawItems.value;
+          return rawItems.value.filter(item => activeSources.value.includes(item.source_name || '未知'));
+        });
+
+        const toggleSource = (source) => {
+          const index = activeSources.value.indexOf(source);
+          if (index > -1) {
+            activeSources.value.splice(index, 1);
+          } else {
+            activeSources.value.push(source);
+          }
+        };
+
+        const toggleAllSources = () => {
+          if (activeSources.value.length === dynamicSourceOptions.value.length) {
+            activeSources.value = [];
+          } else {
+            activeSources.value = dynamicSourceOptions.value.map(s => s.name);
+          }
+        };
+
+        const changeDate = (type, days) => {
+          let filter, loader;
+          if (type === 'raw') { filter = rawFilters; loader = loadRawItems; }
+          else if (type === 'processed') { filter = processedFilters; loader = loadProcessedItems; }
+          else if (type === 'display') { filter = displayFilters; loader = loadDisplayItems; }
+          
+          if (!filter || !filter.date) return;
+          const d = new Date(filter.date);
+          if (isNaN(d.getTime())) return;
+          
+          d.setDate(d.getDate() + days);
+          filter.date = d.toISOString().split('T')[0];
+          loader();
+        };
 
         const loadRawItems = async () => {
           if (!supabase) return showToast('请先配置 Supabase');
           loading.raw = true;
           try {
             let query = supabase.from(`raw_items${settings.tableSuffix}`).select('*').order('created_at', { ascending: false }).limit(50);
-            if (rawFilters.source) query = query.eq('source_name', rawFilters.source);
+            
             if (rawFilters.date) {
               const start = new Date(rawFilters.date);
-              start.setUTCHours(0, 0, 0, 0);
-              const end = new Date(start);
-              end.setUTCDate(end.getUTCDate() + 1);
-              query = query.gte('created_at', start.toISOString()).lt('created_at', end.toISOString());
+              if (!isNaN(start.getTime())) {
+                start.setUTCHours(0, 0, 0, 0);
+                const end = new Date(start);
+                end.setUTCDate(end.getUTCDate() + 1);
+                query = query.gte('created_at', start.toISOString()).lt('created_at', end.toISOString());
+              }
             }
             const { data, error } = await query;
             if (error) throw error;
@@ -1126,9 +1439,17 @@
               });
             }
             rawItems.value = data || [];
-            if (rawItems.value.length > 0 && !selectedRawItem.value) {
+            
+            // Auto-select first item
+            if (rawItems.value.length > 0) {
               selectedRawItem.value = rawItems.value[0];
+            } else {
+              selectedRawItem.value = null;
             }
+
+            // Sync active sources with new data
+            activeSources.value = dynamicSourceOptions.value.map(s => s.name);
+
           } catch (e) {
             showToast(e.message);
           } finally {
@@ -1139,7 +1460,41 @@
         // Tab 2: Processed Items
         const processedItems = ref([]);
         const selectedProcessedItem = ref(null);
-        const processedFilters = reactive({ date: '', category: '', minAha: '' });
+        const processedFilters = reactive({ date: todayStr, category: '', minAha: '' });
+        const activeProcessedSources = ref([]);
+
+        const dynamicProcessedSourceOptions = computed(() => {
+          const counts = {};
+          processedItems.value.forEach(item => {
+            const s = item.source_name || '未知';
+            counts[s] = (counts[s] || 0) + 1;
+          });
+          return Object.entries(counts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        });
+
+        const filteredProcessedItems = computed(() => {
+          if (activeProcessedSources.value.length === 0) return processedItems.value;
+          return processedItems.value.filter(item => activeProcessedSources.value.includes(item.source_name || '未知'));
+        });
+
+        const toggleProcessedSource = (source) => {
+          const index = activeProcessedSources.value.indexOf(source);
+          if (index > -1) {
+            activeProcessedSources.value.splice(index, 1);
+          } else {
+            activeProcessedSources.value.push(source);
+          }
+        };
+
+        const toggleAllProcessedSources = () => {
+          if (activeProcessedSources.value.length === dynamicProcessedSourceOptions.value.length) {
+            activeProcessedSources.value = [];
+          } else {
+            activeProcessedSources.value = dynamicProcessedSourceOptions.value.map(s => s.name);
+          }
+        };
 
         const loadProcessedItems = async () => {
           if (!supabase) return showToast('请先配置 Supabase');
@@ -1152,14 +1507,110 @@
             
             const { data, error } = await query;
             if (error) throw error;
+            
             processedItems.value = data || [];
-            if (processedItems.value.length > 0 && !selectedProcessedItem.value) {
+            if (processedItems.value.length > 0) {
               selectedProcessedItem.value = processedItems.value[0];
+            } else {
+              selectedProcessedItem.value = null;
             }
+
+            activeProcessedSources.value = dynamicProcessedSourceOptions.value.map(s => s.name);
           } catch (e) {
             showToast(e.message);
           } finally {
             loading.processed = false;
+          }
+        };
+
+        // Tab: Display Items
+        const displayItems = ref([]);
+        const selectedDisplayItem = ref(null);
+        const displayFilters = reactive({ date: todayStr, category: '' });
+        const activeDisplaySources = ref([]);
+
+        const dynamicDisplaySourceOptions = computed(() => {
+          const counts = {};
+          displayItems.value.forEach(item => {
+            const s = item.source_name || '未知';
+            counts[s] = (counts[s] || 0) + 1;
+          });
+          return Object.entries(counts)
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        });
+
+        const filteredDisplayItems = computed(() => {
+          if (activeDisplaySources.value.length === 0) return displayItems.value;
+          return displayItems.value.filter(item => activeDisplaySources.value.includes(item.source_name || '未知'));
+        });
+
+        const toggleDisplaySource = (source) => {
+          const index = activeDisplaySources.value.indexOf(source);
+          if (index > -1) {
+            activeDisplaySources.value.splice(index, 1);
+          } else {
+            activeDisplaySources.value.push(source);
+          }
+        };
+
+        const toggleAllDisplaySources = () => {
+          if (activeDisplaySources.value.length === dynamicDisplaySourceOptions.value.length) {
+            activeDisplaySources.value = [];
+          } else {
+            activeDisplaySources.value = dynamicDisplaySourceOptions.value.map(s => s.name);
+          }
+        };
+
+        const loadDisplayItems = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          loading.display = true;
+          try {
+            let query = supabase.from(`display_items${settings.tableSuffix}`).select('*').order('rank', { ascending: true }).limit(100);
+            if (displayFilters.date) query = query.eq('snapshot_date', displayFilters.date);
+            if (displayFilters.category) query = query.eq('category', displayFilters.category);
+            
+            const { data, error } = await query;
+            if (error) throw error;
+
+            // Fetch event counts for these items
+            if (data && data.length > 0) {
+              const itemIds = data.map(item => item.processed_item_id);
+              const { data: eventData, error: eventError } = await supabase
+                .from(`user_events${settings.tableSuffix}`)
+                .select('item_id, event_type')
+                .in('item_id', itemIds);
+              
+              if (!eventError && eventData) {
+                const counts = {};
+                eventData.forEach(event => {
+                  if (!counts[event.item_id]) {
+                    counts[event.item_id] = { impression: 0, click: 0, click_original: 0 };
+                  }
+                  counts[event.item_id][event.event_type]++;
+                });
+                
+                data.forEach(item => {
+                  const itemCounts = counts[item.processed_item_id] || { impression: 0, click: 0, click_original: 0 };
+                  item.impressions = itemCounts.impression;
+                  item.clicks = itemCounts.click;
+                  item.clicks_original = itemCounts.click_original;
+                });
+              }
+            }
+
+            displayItems.value = data || [];
+            if (displayItems.value.length > 0) {
+              selectedDisplayItem.value = displayItems.value[0];
+            } else {
+              selectedDisplayItem.value = null;
+            }
+
+            activeDisplaySources.value = dynamicDisplaySourceOptions.value.map(s => s.name);
+          } catch (e) {
+            showToast(e.message);
+          } finally {
+            loading.display = false;
           }
         };
 
@@ -1401,14 +1852,14 @@
         watch(currentTab, (newTab) => {
           if (newTab === 'raw') loadRawItems();
           else if (newTab === 'processed') loadProcessedItems();
+          else if (newTab === 'display') loadDisplayItems();
           else if (newTab === 'prompts') loadPrompts();
         });
 
-        onMounted(() => {
+        onMounted(async () => {
           loadSettings();
           if (supabase) {
             loadStats();
-            loadSourceOptions();
             loadRawItems();
           }
         });
@@ -1417,12 +1868,16 @@
           currentTab, showSettings, settings, saveSettings, testConnection, testingConnection, toast,
           stats, sourceOptions,
           rawItems, rawFilters, loadRawItems, loading, selectedRawItem, filteredRawMetadata,
+          toggleSource, toggleAllSources, activeSources, dynamicSourceOptions, filteredRawItems,
           processedItems, processedFilters, loadProcessedItems, selectedProcessedItem,
+          toggleProcessedSource, toggleAllProcessedSources, activeProcessedSources, dynamicProcessedSourceOptions, filteredProcessedItems,
+          displayItems, displayFilters, loadDisplayItems, selectedDisplayItem,
+          toggleDisplaySource, toggleAllDisplaySources, activeDisplaySources, dynamicDisplaySourceOptions, filteredDisplayItems,
           qa, startQA, exportQA, selectedQaResult,
           prompts, selectedPrompt, createNewPrompt, selectPrompt, savePromptAsNew, setActivePrompt,
           showDeleteModal, confirmDeletePrompt, deletePrompt,
           promptSearch, filteredPrompts, promptHistory,
-          setEnv
+          setEnv, changeDate
         };
       }
     }).mount('#app');
