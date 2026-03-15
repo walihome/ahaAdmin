@@ -1099,6 +1099,16 @@
                 <div class="block-label">质检理由</div>
                 <div class="block-text">{{ selectedQaResult.reason }}</div>
               </div>
+              
+              <div class="content-block" v-if="selectedQaResult.prompt_text">
+                <div class="block-label">发送给大模型的 Prompt</div>
+                <div class="block-text font-mono text-xs whitespace-pre-wrap text-text-dim" style="background: var(--surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">{{ selectedQaResult.prompt_text }}</div>
+              </div>
+
+              <div class="content-block" v-if="selectedQaResult.llm_response">
+                <div class="block-label">大模型返回结果</div>
+                <div class="block-text font-mono text-xs whitespace-pre-wrap text-text-dim" style="background: var(--surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">{{ selectedQaResult.llm_response }}</div>
+              </div>
             </div>
           </div>
           <div v-else class="flex-1 flex flex-col items-center justify-center text-text-dim bg-dark-bg">
@@ -1412,6 +1422,7 @@
           else if (currentTab.value === 'processed') loadProcessedItems();
           else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
+          else if (currentTab.value === 'qa') loadQaResults();
           showToast(`已切换至${isTest ? '测试' : '生产'}环境`);
         };
 
@@ -1425,6 +1436,7 @@
           else if (currentTab.value === 'processed') loadProcessedItems();
           else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
+          else if (currentTab.value === 'qa') loadQaResults();
         };
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -1786,7 +1798,7 @@
           if (!res.ok) throw new Error(`Kimi API Error: ${res.status}`);
           const data = await res.json();
           const text = data.choices[0].message.content;
-          return JSON.parse(text);
+          return { parsed: JSON.parse(text), raw: text };
         };
 
         const startQA = async () => {
@@ -1849,14 +1861,40 @@ Aha Index: {aha_index}
               });
 
               try {
-                const res = await callKimi(promptText);
+                const { parsed: res, raw: rawResponse } = await callKimi(promptText);
                 const pass = res.titleScore >= 3 && res.summaryScore >= 3 && res.push;
-                const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, ...res, pass, date: new Date().toLocaleDateString() };
+                const result = { 
+                  id: item.item_id, 
+                  title: item.processed_title, 
+                  source_name: item.source_name, 
+                  ...res, 
+                  pass, 
+                  date: new Date().toLocaleDateString(),
+                  prompt_text: promptText,
+                  llm_response: rawResponse
+                };
+                
+                // Save to Supabase
+                await supabase.from(`qa_results${settings.tableSuffix}`).upsert({
+                  item_id: item.item_id,
+                  processed_title: item.processed_title,
+                  source_name: item.source_name,
+                  title_score: res.titleScore,
+                  summary_score: res.summaryScore,
+                  aha_reasonable: res.ahaReasonable,
+                  push: res.push,
+                  reason: res.reason,
+                  pass: pass,
+                  prompt_text: promptText,
+                  llm_response: rawResponse,
+                  created_at: new Date().toISOString()
+                }, { onConflict: 'item_id' });
+
                 qa.results.push(result);
                 if (!selectedQaResult.value) selectedQaResult.value = result;
               } catch (e) {
                 console.error(e);
-                const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, titleScore: 0, summaryScore: 0, ahaReasonable: 'Error', push: false, reason: 'API 调用失败', pass: false, date: new Date().toLocaleDateString() };
+                const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, titleScore: 0, summaryScore: 0, ahaReasonable: 'Error', push: false, reason: 'API 调用失败', pass: false, date: new Date().toLocaleDateString(), prompt_text: promptText, llm_response: String(e) };
                 qa.results.push(result);
                 if (!selectedQaResult.value) selectedQaResult.value = result;
               }
@@ -1919,7 +1957,7 @@ Aha Index: {aha_index}
               return variables[key] !== undefined ? variables[key] : match;
             });
 
-            const res = await callKimi(promptText);
+            const { parsed: res, raw: rawResponse } = await callKimi(promptText);
             const pass = res.titleScore >= 3 && res.summaryScore >= 3 && res.push;
             const result = { 
               id: item.item_id, 
@@ -1927,8 +1965,26 @@ Aha Index: {aha_index}
               source_name: item.source_name, 
               ...res, 
               pass, 
-              date: new Date().toLocaleDateString() 
+              date: new Date().toLocaleDateString(),
+              prompt_text: promptText,
+              llm_response: rawResponse
             };
+            
+            // Save to Supabase
+            await supabase.from(`qa_results${settings.tableSuffix}`).upsert({
+              item_id: item.item_id,
+              processed_title: item.processed_title,
+              source_name: item.source_name,
+              title_score: res.titleScore,
+              summary_score: res.summaryScore,
+              aha_reasonable: res.ahaReasonable,
+              push: res.push,
+              reason: res.reason,
+              pass: pass,
+              prompt_text: promptText,
+              llm_response: rawResponse,
+              created_at: new Date().toISOString()
+            }, { onConflict: 'item_id' });
             
             const existingIdx = qa.results.findIndex(r => r.id === result.id);
             if (existingIdx >= 0) {
@@ -2111,11 +2167,46 @@ Aha Index: {aha_index}
           }
         };
 
+        const loadQaResults = async () => {
+          if (!supabase) return;
+          try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data, error } = await supabase.from(`qa_results${settings.tableSuffix}`)
+              .select('*')
+              .gte('created_at', `${today}T00:00:00Z`)
+              .order('created_at', { ascending: false });
+            if (error) throw error;
+            
+            qa.results = data.map(d => ({
+              id: d.item_id,
+              title: d.processed_title,
+              source_name: d.source_name,
+              titleScore: d.title_score,
+              summaryScore: d.summary_score,
+              ahaReasonable: d.aha_reasonable,
+              push: d.push,
+              reason: d.reason,
+              pass: d.pass,
+              date: new Date(d.created_at).toLocaleDateString(),
+              prompt_text: d.prompt_text,
+              llm_response: d.llm_response
+            }));
+            
+            if (qa.results.length > 0 && !selectedQaResult.value) {
+              selectedQaResult.value = qa.results[0];
+            }
+            activeQaSources.value = dynamicQaSourceOptions.value.map(s => s.name);
+          } catch (e) {
+            console.error('Failed to load QA results:', e);
+          }
+        };
+
         watch(currentTab, (newTab) => {
           if (newTab === 'raw') loadRawItems();
           else if (newTab === 'processed') loadProcessedItems();
           else if (newTab === 'display') loadDisplayItems();
           else if (newTab === 'prompts') loadPrompts();
+          else if (newTab === 'qa') loadQaResults();
         });
 
         onMounted(async () => {
