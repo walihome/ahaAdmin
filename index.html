@@ -1549,6 +1549,7 @@
           else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
           else if (currentTab.value === 'qa') loadQaResults();
+          else if (currentTab.value === 'analytics') loadAnalytics();
           showToast(`已切换至${isTest ? '测试' : '生产'}环境`);
         };
 
@@ -1563,6 +1564,7 @@
           else if (currentTab.value === 'display') loadDisplayItems();
           else if (currentTab.value === 'prompts') loadPrompts();
           else if (currentTab.value === 'qa') loadQaResults();
+          else if (currentTab.value === 'analytics') loadAnalytics();
         };
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -2370,11 +2372,11 @@ Aha Index: {aha_index}
               return { ...stat, title: detail.processed_title, source_name: detail.source_name };
             };
 
-            analyticsData.topImpression = enrich(topImpression);
-            analyticsData.topClick = enrich(topClick);
-            analyticsData.topOriginalClick = enrich(topOriginalClick);
-            analyticsData.topCtr = enrich(topCtr);
-            analyticsData.topOctr = enrich(topOctr);
+            analyticsData.topImpression = topImpression?.impressions > 0 ? enrich(topImpression) : null;
+            analyticsData.topClick = topClick?.clicks > 0 ? enrich(topClick) : null;
+            analyticsData.topOriginalClick = topOriginalClick?.original_clicks > 0 ? enrich(topOriginalClick) : null;
+            analyticsData.topCtr = topCtr?.ctr > 0 ? enrich(topCtr) : null;
+            analyticsData.topOctr = topOctr?.octr > 0 ? enrich(topOctr) : null;
             analyticsData.hasData = true;
 
           } catch (e) {
@@ -2425,6 +2427,7 @@ Aha Index: {aha_index}
           else if (newTab === 'display') loadDisplayItems();
           else if (newTab === 'prompts') loadPrompts();
           else if (newTab === 'qa') loadQaResults();
+          else if (newTab === 'analytics') loadAnalytics();
         });
 
         onMounted(async () => {
