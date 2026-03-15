@@ -194,7 +194,7 @@
       background: var(--surface);
     }
     .mini-stat { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
-    .mini-stat-val { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--sans); }
+    .mini-stat-val { font-size: 13px; font-weight: 700; color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
     .divider-v { width: 1px; height: 18px; background: var(--border); }
     .detail-header {
       padding: 20px 28px 16px;
@@ -306,7 +306,7 @@
     .qa-score-card.warn::after { background: var(--orange); }
     .qa-score-card.fail::after { background: var(--red); }
     .score-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-    .score-val { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+    .score-val { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-family: system-ui, -apple-system, sans-serif; }
     .score-val.pass { color: var(--green); }
     .score-val.warn { color: var(--orange); }
     .score-val.fail { color: var(--red); }
@@ -796,6 +796,10 @@
                 <span class="card-tag tag-done">已发布</span>
               </div>
               <div class="detail-actions">
+                <a v-if="selectedProcessedRawItem?.original_url" :href="selectedProcessedRawItem.original_url" target="_blank" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  查看原文
+                </a>
                 <button class="btn-secondary">下线</button>
                 <button class="btn-green">提交质检</button>
                 <button class="btn-primary">发布</button>
@@ -821,11 +825,15 @@
               </div>
               <div class="content-block">
                 <div class="block-label">摘要</div>
-                <div class="block-text">{{ selectedProcessedItem.summary }}</div>
+                <div class="block-text" style="font-family: system-ui, -apple-system, sans-serif;">{{ selectedProcessedItem.summary }}</div>
               </div>
               <div class="content-block">
                 <div class="block-label">加工后内容</div>
-                <div class="block-text" v-html="selectedProcessedItem.processed_content"></div>
+                <div class="block-text prose prose-invert max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="selectedProcessedItem.processed_content"></div>
+              </div>
+              <div class="content-block" v-if="selectedProcessedRawItem">
+                <div class="block-label">加工前内容</div>
+                <div class="block-text prose prose-invert max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="processedRawContentHtml"></div>
               </div>
             </div>
           </div>
@@ -1498,8 +1506,25 @@
         // Tab 2: Processed Items
         const processedItems = ref([]);
         const selectedProcessedItem = ref(null);
+        const selectedProcessedRawItem = ref(null);
         const processedFilters = reactive({ date: todayStr, category: '', minAha: '' });
         const activeProcessedSources = ref([]);
+
+        watch(selectedProcessedItem, async (newVal) => {
+          if (!newVal) {
+            selectedProcessedRawItem.value = null;
+            return;
+          }
+          if (!supabase) return;
+          try {
+            const { data, error } = await supabase.from(`raw_items${settings.tableSuffix}`).select('*').eq('id', newVal.item_id).single();
+            if (error) throw error;
+            selectedProcessedRawItem.value = data;
+          } catch (e) {
+            console.error('Failed to load raw item for processed item:', e);
+            selectedProcessedRawItem.value = null;
+          }
+        });
 
         const dynamicProcessedSourceOptions = computed(() => {
           const counts = {};
@@ -1510,6 +1535,12 @@
           return Object.entries(counts)
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        });
+
+        const processedRawContentHtml = computed(() => {
+          if (!selectedProcessedRawItem.value) return '';
+          const text = selectedProcessedRawItem.value.body_text || selectedProcessedRawItem.value.content || '';
+          return window.marked ? window.marked.parse(text) : text;
         });
 
         const filteredProcessedItems = computed(() => {
@@ -1964,7 +1995,7 @@
           stats, sourceOptions,
           rawItems, rawFilters, loadRawItems, loading, selectedRawItem, rawContentHtml, filteredRawMetadata,
           toggleSource, toggleAllSources, activeSources, dynamicSourceOptions, filteredRawItems,
-          processedItems, processedFilters, loadProcessedItems, selectedProcessedItem,
+          processedItems, processedFilters, loadProcessedItems, selectedProcessedItem, selectedProcessedRawItem, processedRawContentHtml,
           toggleProcessedSource, toggleAllProcessedSources, activeProcessedSources, dynamicProcessedSourceOptions, filteredProcessedItems,
           displayItems, displayFilters, loadDisplayItems, selectedDisplayItem,
           toggleDisplaySource, toggleAllDisplaySources, activeDisplaySources, dynamicDisplaySourceOptions, filteredDisplayItems,
