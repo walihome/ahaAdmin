@@ -622,6 +622,16 @@
         </a>
       </div>
 
+      <div class="nav-section">
+        <div class="nav-label">数据分析</div>
+        <a :class="['nav-item', currentTab === 'analytics' ? 'active' : '']" @click="currentTab = 'analytics'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          每日爆点分析
+        </a>
+      </div>
+
       <div class="sidebar-bottom">
         <div class="env-toggle">
           <div :class="['env-btn', 'prod', !settings.isTest ? 'active' : '']" @click="setEnv(false)">生产</div>
@@ -1229,6 +1239,122 @@
         </div>
       </div>
 
+      <!-- PAGE: 数据分析 -->
+      <div class="page active" v-if="currentTab === 'analytics'">
+        <div class="flex flex-col h-full w-full bg-dark-bg p-6 overflow-y-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-text">每日爆点数据分析</h2>
+            <div class="date-nav">
+              <div class="date-nav-btn" @click="changeDate('analytics', -1)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                前一天
+              </div>
+              <div class="date-picker-wrap" style="flex:1">
+                <input class="hidden-picker" type="date" v-model="analyticsFilters.date" @change="loadAnalytics">
+                <div class="date-display" style="width:100%">{{ analyticsFilters.date }}</div>
+              </div>
+              <div class="date-nav-btn" @click="changeDate('analytics', 1)">
+                后一天
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="loading.analytics" class="flex items-center justify-center py-20 text-text-muted">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            加载中...
+          </div>
+          <div v-else-if="!analyticsData.hasData" class="flex items-center justify-center py-20 text-text-muted">
+            当日暂无数据
+          </div>
+          <div v-else class="grid grid-cols-1 gap-6">
+            
+            <!-- 曝光量最高 -->
+            <div class="bg-surface rounded-xl border border-border p-5">
+              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                每日曝光量最高
+              </div>
+              <div v-if="analyticsData.topImpression" class="flex flex-col gap-2">
+                <div class="text-lg font-bold text-text">{{ analyticsData.topImpression.title }}</div>
+                <div class="flex items-center gap-4 text-sm text-text-dim">
+                  <span class="text-accent">{{ analyticsData.topImpression.impressions }} 次曝光</span>
+                  <span>来源: {{ analyticsData.topImpression.source_name }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-text-dim">无数据</div>
+            </div>
+
+            <!-- 点击量最高 -->
+            <div class="bg-surface rounded-xl border border-border p-5">
+              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                点击量最高
+              </div>
+              <div v-if="analyticsData.topClick" class="flex flex-col gap-2">
+                <div class="text-lg font-bold text-text">{{ analyticsData.topClick.title }}</div>
+                <div class="flex items-center gap-4 text-sm text-text-dim">
+                  <span style="color: var(--green)">{{ analyticsData.topClick.clicks }} 次点击</span>
+                  <span>来源: {{ analyticsData.topClick.source_name }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-text-dim">无数据</div>
+            </div>
+
+            <!-- 点击原文量最高 -->
+            <div class="bg-surface rounded-xl border border-border p-5">
+              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                点击原文量最高
+              </div>
+              <div v-if="analyticsData.topOriginalClick" class="flex flex-col gap-2">
+                <div class="text-lg font-bold text-text">{{ analyticsData.topOriginalClick.title }}</div>
+                <div class="flex items-center gap-4 text-sm text-text-dim">
+                  <span style="color: #a78bfa">{{ analyticsData.topOriginalClick.original_clicks }} 次点击原文</span>
+                  <span>来源: {{ analyticsData.topOriginalClick.source_name }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-text-dim">无数据</div>
+            </div>
+
+            <!-- 点击率最高 -->
+            <div class="bg-surface rounded-xl border border-border p-5">
+              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                点击率最高
+              </div>
+              <div v-if="analyticsData.topCtr" class="flex flex-col gap-2">
+                <div class="text-lg font-bold text-text">{{ analyticsData.topCtr.title }}</div>
+                <div class="flex items-center gap-4 text-sm text-text-dim">
+                  <span style="color: #facc15">{{ (analyticsData.topCtr.ctr * 100).toFixed(2) }}% 点击率</span>
+                  <span>({{ analyticsData.topCtr.clicks }} / {{ analyticsData.topCtr.impressions }})</span>
+                  <span>来源: {{ analyticsData.topCtr.source_name }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-text-dim">无数据</div>
+            </div>
+
+            <!-- 原文点击率最高 -->
+            <div class="bg-surface rounded-xl border border-border p-5">
+              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                原文点击率最高
+              </div>
+              <div v-if="analyticsData.topOctr" class="flex flex-col gap-2">
+                <div class="text-lg font-bold text-text">{{ analyticsData.topOctr.title }}</div>
+                <div class="flex items-center gap-4 text-sm text-text-dim">
+                  <span style="color: #60a5fa">{{ (analyticsData.topOctr.octr * 100).toFixed(2) }}% 原文点击率</span>
+                  <span>({{ analyticsData.topOctr.original_clicks }} / {{ analyticsData.topOctr.impressions }})</span>
+                  <span>来源: {{ analyticsData.topOctr.source_name }}</span>
+                </div>
+              </div>
+              <div v-else class="text-sm text-text-dim">无数据</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Settings Modal -->
@@ -1456,7 +1582,7 @@
         });
         const rawFilters = reactive({ date: todayStr });
         const activeSources = ref([]); // Sources to SHOW
-        const loading = reactive({ raw: false, processed: false, display: false });
+        const loading = reactive({ raw: false, processed: false, display: false, analytics: false });
 
         const dynamicSourceOptions = computed(() => {
           const counts = {};
@@ -1496,6 +1622,7 @@
           if (type === 'raw') { filter = rawFilters; loader = loadRawItems; }
           else if (type === 'processed') { filter = processedFilters; loader = loadProcessedItems; }
           else if (type === 'display') { filter = displayFilters; loader = loadDisplayItems; }
+          else if (type === 'analytics') { filter = analyticsFilters; loader = loadAnalytics; }
           
           if (!filter || !filter.date) return;
           const d = new Date(filter.date);
@@ -2167,6 +2294,97 @@ Aha Index: {aha_index}
           }
         };
 
+        const analyticsFilters = reactive({ date: todayStr });
+        const analyticsData = reactive({
+          hasData: false,
+          topImpression: null,
+          topClick: null,
+          topOriginalClick: null,
+          topCtr: null,
+          topOctr: null
+        });
+
+        const loadAnalytics = async () => {
+          if (!supabase) return;
+          loading.analytics = true;
+          analyticsData.hasData = false;
+          try {
+            const { data: events, error } = await supabase
+              .from(`user_events${settings.tableSuffix}`)
+              .select('item_id, event_type')
+              .eq('snapshot_date', analyticsFilters.date);
+            
+            if (error) throw error;
+            
+            if (!events || events.length === 0) {
+              loading.analytics = false;
+              return;
+            }
+
+            const statsMap = {};
+            events.forEach(e => {
+              if (!statsMap[e.item_id]) {
+                statsMap[e.item_id] = { item_id: e.item_id, impressions: 0, clicks: 0, original_clicks: 0 };
+              }
+              if (e.event_type === 'impression') statsMap[e.item_id].impressions++;
+              else if (e.event_type === 'click') statsMap[e.item_id].clicks++;
+              else if (e.event_type === 'click_original') statsMap[e.item_id].original_clicks++;
+            });
+
+            const statsArray = Object.values(statsMap).map(s => {
+              s.ctr = s.impressions > 0 ? s.clicks / s.impressions : 0;
+              s.octr = s.impressions > 0 ? s.original_clicks / s.impressions : 0;
+              return s;
+            });
+
+            const topImpression = [...statsArray].sort((a, b) => b.impressions - a.impressions)[0];
+            const topClick = [...statsArray].sort((a, b) => b.clicks - a.clicks)[0];
+            const topOriginalClick = [...statsArray].sort((a, b) => b.original_clicks - a.original_clicks)[0];
+            
+            const validForRate = statsArray.filter(s => s.impressions >= 10);
+            const poolForRate = validForRate.length > 0 ? validForRate : statsArray;
+            
+            const topCtr = [...poolForRate].sort((a, b) => b.ctr - a.ctr)[0];
+            const topOctr = [...poolForRate].sort((a, b) => b.octr - a.octr)[0];
+
+            const topItems = [topImpression, topClick, topOriginalClick, topCtr, topOctr].filter(Boolean);
+            const uniqueIds = [...new Set(topItems.map(s => s.item_id))];
+
+            let itemDetails = {};
+            if (uniqueIds.length > 0) {
+              const { data: items } = await supabase
+                .from(`display_items${settings.tableSuffix}`)
+                .select('item_id, processed_title, source_name')
+                .in('item_id', uniqueIds);
+              
+              if (items) {
+                items.forEach(item => {
+                  itemDetails[item.item_id] = item;
+                });
+              }
+            }
+
+            const enrich = (stat) => {
+              if (!stat) return null;
+              const detail = itemDetails[stat.item_id] || { processed_title: '未知内容', source_name: '未知' };
+              return { ...stat, title: detail.processed_title, source_name: detail.source_name };
+            };
+
+            analyticsData.topImpression = enrich(topImpression);
+            analyticsData.topClick = enrich(topClick);
+            analyticsData.topOriginalClick = enrich(topOriginalClick);
+            analyticsData.topCtr = enrich(topCtr);
+            analyticsData.topOctr = enrich(topOctr);
+            analyticsData.hasData = true;
+
+          } catch (e) {
+            console.error('Failed to load analytics:', e);
+            showToast('加载数据分析失败: ' + e.message);
+          } finally {
+            loading.analytics = false;
+          }
+        };
+
         const loadQaResults = async () => {
           if (!supabase) return;
           try {
@@ -2232,6 +2450,7 @@ Aha Index: {aha_index}
           promptTab, promptVariables,
           showDeleteModal, confirmDeletePrompt, deletePrompt,
           promptSearch, filteredPrompts, promptHistory,
+          analyticsFilters, analyticsData, loadAnalytics,
           setEnv, changeDate
         };
       }
