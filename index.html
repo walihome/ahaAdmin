@@ -632,13 +632,13 @@
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                   前一天
                 </div>
-                <div class="date-display" style="flex:1">{{ rawFilters.date }}</div>
-                <div class="date-picker-wrap">
+                <div class="date-picker-wrap" style="flex:1">
                   <input class="hidden-picker" type="date" v-model="rawFilters.date" @change="loadRawItems">
-                  <div class="date-nav-btn">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    选择日期
-                  </div>
+                  <div class="date-display" style="width:100%">{{ rawFilters.date }}</div>
+                </div>
+                <div class="date-nav-btn" @click="changeDate('raw', 1)">
+                  后一天
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </div>
             </div>
@@ -730,18 +730,18 @@
         <div class="two-pane">
           <div class="list-pane">
             <div class="list-search">
-              <div class="date-nav">
+              <div class="date-nav" style="margin-right:0; flex:1;">
                 <div class="date-nav-btn" @click="changeDate('processed', -1)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                   前一天
                 </div>
-                <div class="date-display">{{ processedFilters.date }}</div>
-                <div class="date-picker-wrap">
+                <div class="date-picker-wrap" style="flex:1">
                   <input class="hidden-picker" type="date" v-model="processedFilters.date" @change="loadProcessedItems">
-                  <div class="date-nav-btn">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    选择日期
-                  </div>
+                  <div class="date-display" style="width:100%">{{ processedFilters.date }}</div>
+                </div>
+                <div class="date-nav-btn" @click="changeDate('processed', 1)">
+                  后一天
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </div>
             </div>
@@ -842,18 +842,18 @@
         <div class="two-pane">
           <div class="list-pane">
             <div class="list-search">
-              <div class="date-nav">
+              <div class="date-nav" style="margin-right:0; flex:1;">
                 <div class="date-nav-btn" @click="changeDate('display', -1)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                   前一天
                 </div>
-                <div class="date-display">{{ displayFilters.date }}</div>
-                <div class="date-picker-wrap">
+                <div class="date-picker-wrap" style="flex:1">
                   <input class="hidden-picker" type="date" v-model="displayFilters.date" @change="loadDisplayItems">
-                  <div class="date-nav-btn">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    选择日期
-                  </div>
+                  <div class="date-display" style="width:100%">{{ displayFilters.date }}</div>
+                </div>
+                <div class="date-nav-btn" @click="changeDate('display', 1)">
+                  后一天
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </div>
             </div>
