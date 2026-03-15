@@ -412,6 +412,7 @@
     .EasyMDEContainer { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; min-height: 0; }
     .CodeMirror { border: none !important; background: var(--bg) !important; font-family: var(--mono) !important; font-size: 13px !important; color: var(--text) !important; flex: 1 !important; height: auto !important; }
     .CodeMirror-scroll { min-height: 100% !important; background: var(--bg) !important; }
+    .CodeMirror-cursor { border-left: 1px solid var(--text) !important; }
     .editor-preview-active, .editor-preview-side { background: var(--surface) !important; color: var(--text) !important; border: none !important; }
 
     /* Loading Dots */
@@ -974,7 +975,7 @@
               </div>
             </div>
             <div class="item-list">
-              <div v-for="res in qa.results" :key="res.id" 
+              <div v-for="res in filteredQaResults" :key="res.id" 
                    :class="['content-card', selectedQaResult?.id === res.id ? 'active' : '']"
                    @click="selectedQaResult = res">
                 <div class="card-top">
@@ -985,6 +986,23 @@
                 <div class="card-meta">
                   <div class="meta-pill"><div class="dot-live"></div><span class="live-label">最新</span></div>
                   <div class="meta-pill">{{ res.date }}</div>
+                </div>
+              </div>
+              <div v-if="filteredQaResults.length === 0 && !qa.running" class="p-10 text-center text-text-dim text-xs">
+                暂无匹配内容
+              </div>
+            </div>
+            <!-- SOURCE FILTER TAGS -->
+            <div class="source-tags-container" v-if="dynamicQaSourceOptions.length > 0">
+              <div class="source-tags-label">
+                <span>来源过滤 (当前列表)</span>
+                <span @click="toggleAllQaSources" class="cursor-pointer hover:text-accent transition-colors">全选/取消</span>
+              </div>
+              <div class="source-tags-list">
+                <div v-for="s in dynamicQaSourceOptions" :key="s.name" 
+                     :class="['source-tag', activeQaSources.includes(s.name) ? 'active' : '']"
+                     @click="toggleQaSource(s.name)">
+                  {{ s.name }} <span class="ml-1 opacity-60 font-normal">({{ s.count }} | <span style="color: var(--green)">{{ s.pass }}</span>/<span style="color: var(--red)">{{ s.fail }}</span>)</span>
                 </div>
               </div>
             </div>
@@ -1087,9 +1105,9 @@
           <!-- PROMPT EDITOR -->
           <div class="detail-pane" v-if="selectedPrompt">
             <div class="detail-topbar">
-              <div class="mini-stat">字符数 <span class="mini-stat-val">{{ selectedPrompt.content.length }}</span></div>
+              <div class="mini-stat">字符数 <span class="mini-stat-val">{{ selectedPrompt.content?.length || 0 }}</span></div>
               <div class="divider-v"></div>
-              <div class="mini-stat">预估 Token <span class="mini-stat-val">{{ Math.ceil(selectedPrompt.content.length / 2) }}</span></div>
+              <div class="mini-stat">预估 Token <span class="mini-stat-val">{{ Math.ceil((selectedPrompt.content?.length || 0) / 2) }}</span></div>
               <div class="divider-v"></div>
               <div class="mini-stat">版本 <span class="mini-stat-val">v{{ selectedPrompt.version }}</span></div>
             </div>
@@ -1106,18 +1124,31 @@
             </div>
             <div class="detail-body flex-1 overflow-hidden flex flex-col" style="padding:0;">
               <div class="editor-tabs px-7 pt-4">
-                <div class="tab active">编辑器</div>
-                <div class="tab">预览</div>
-                <div class="tab">变量</div>
+                <div :class="['tab', promptTab === 'editor' ? 'active' : '']" @click="promptTab = 'editor'">编辑器</div>
+                <div :class="['tab', promptTab === 'preview' ? 'active' : '']" @click="promptTab = 'preview'">预览</div>
+                <div :class="['tab', promptTab === 'variables' ? 'active' : '']" @click="promptTab = 'variables'">变量</div>
               </div>
-              <div class="textarea-wrap flex-1 min-h-0 relative flex flex-col">
-                <textarea id="prompt-editor"></textarea>
+              <div class="textarea-wrap flex-1 min-h-0 relative flex flex-col" v-show="promptTab === 'editor'">
+                <textarea id="prompt-editor" style="background: var(--bg); color: var(--text); border: none; outline: none; resize: none; width: 100%; height: 100%; padding: 20px;"></textarea>
+              </div>
+              <div class="flex-1 overflow-y-auto p-7 text-text-muted leading-relaxed" v-show="promptTab === 'preview'">
+                <div class="whitespace-pre-wrap font-mono text-[13px]">{{ selectedPrompt.content || '暂无内容' }}</div>
+              </div>
+              <div class="flex-1 overflow-y-auto p-7 text-text-muted" v-show="promptTab === 'variables'">
+                <div class="text-xs mb-4">在提示词中使用 <code class="bg-surface2 px-1 py-0.5 rounded text-accent" v-pre>{{变量名}}</code> 格式定义变量。</div>
+                <div v-if="promptVariables.length > 0" class="flex flex-col gap-3">
+                  <div v-for="v in promptVariables" :key="v" class="flex items-center gap-3 bg-surface border border-border p-3 rounded-lg">
+                    <div class="font-mono text-accent text-xs font-bold w-32 shrink-0">{{ v }}</div>
+                    <input type="text" class="flex-1 bg-surface2 border border-border rounded-md px-3 py-1.5 text-xs text-text focus:border-accent outline-none" placeholder="测试值...">
+                  </div>
+                </div>
+                <div v-else class="text-center py-10 opacity-50 text-xs">未检测到变量</div>
               </div>
             </div>
             <div class="detail-footer">
               <div class="stats">
-                <div class="stat">字符 <span class="stat-val">{{ selectedPrompt.content.length }}</span></div>
-                <div class="stat">Token <span class="stat-val">~{{ Math.ceil(selectedPrompt.content.length / 2) }}</span></div>
+                <div class="stat">字符 <span class="stat-val">{{ selectedPrompt.content?.length || 0 }}</span></div>
+                <div class="stat">Token <span class="stat-val">~{{ Math.ceil((selectedPrompt.content?.length || 0) / 2) }}</span></div>
               </div>
               <div style="font-family:var(--mono); font-size:10px; color:var(--text-dim);">Auto-saved · UTF-8</div>
             </div>
@@ -1199,7 +1230,7 @@
   </div>
 
   <script>
-        const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
+        const { createApp, ref, reactive, onMounted, watch, computed, nextTick } = Vue;
 
     createApp({
       setup() {
@@ -1617,6 +1648,48 @@
         // Tab 3: AI QA
         const qa = reactive({ running: false, current: 0, total: 0, results: [] });
         const selectedQaResult = ref(null);
+        const activeQaSources = ref([]);
+
+        const dynamicQaSourceOptions = computed(() => {
+          const counts = {};
+          qa.results.forEach(item => {
+            const s = item.source_name || '未知';
+            if (!counts[s]) {
+              counts[s] = { count: 0, pass: 0, fail: 0 };
+            }
+            counts[s].count++;
+            if (item.pass) {
+              counts[s].pass++;
+            } else {
+              counts[s].fail++;
+            }
+          });
+          return Object.entries(counts)
+            .map(([name, stats]) => ({ name, count: stats.count, pass: stats.pass, fail: stats.fail }))
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        });
+
+        const filteredQaResults = computed(() => {
+          if (activeQaSources.value.length === 0) return qa.results;
+          return qa.results.filter(item => activeQaSources.value.includes(item.source_name || '未知'));
+        });
+
+        const toggleQaSource = (source) => {
+          const index = activeQaSources.value.indexOf(source);
+          if (index > -1) {
+            activeQaSources.value.splice(index, 1);
+          } else {
+            activeQaSources.value.push(source);
+          }
+        };
+
+        const toggleAllQaSources = () => {
+          if (activeQaSources.value.length === dynamicQaSourceOptions.value.length) {
+            activeQaSources.value = [];
+          } else {
+            activeQaSources.value = dynamicQaSourceOptions.value.map(s => s.name);
+          }
+        };
         
         const callKimi = async (promptText) => {
           if (!settings.kimiKey) throw new Error('未配置 Kimi API Key');
@@ -1680,17 +1753,18 @@
               try {
                 const res = await callKimi(prompt);
                 const pass = res.titleScore >= 3 && res.summaryScore >= 3 && res.push;
-                const result = { id: item.item_id, title: item.processed_title, ...res, pass, date: new Date().toLocaleDateString() };
+                const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, ...res, pass, date: new Date().toLocaleDateString() };
                 qa.results.push(result);
                 if (!selectedQaResult.value) selectedQaResult.value = result;
               } catch (e) {
                 console.error(e);
-                const result = { id: item.item_id, title: item.processed_title, titleScore: 0, summaryScore: 0, ahaReasonable: 'Error', push: false, reason: 'API 调用失败', pass: false, date: new Date().toLocaleDateString() };
+                const result = { id: item.item_id, title: item.processed_title, source_name: item.source_name, titleScore: 0, summaryScore: 0, ahaReasonable: 'Error', push: false, reason: 'API 调用失败', pass: false, date: new Date().toLocaleDateString() };
                 qa.results.push(result);
                 if (!selectedQaResult.value) selectedQaResult.value = result;
               }
               qa.current++;
             }
+            activeQaSources.value = dynamicQaSourceOptions.value.map(s => s.name);
           } catch (e) {
             showToast(e.message);
           } finally {
@@ -1716,7 +1790,19 @@
         // Tab 4: Prompts
         const prompts = ref([]);
         const selectedPrompt = ref(null);
+        const promptTab = ref('editor');
         let mde = null;
+
+        const promptVariables = computed(() => {
+          if (!selectedPrompt.value || !selectedPrompt.value.content) return [];
+          const regex = /\{\{([^}]+)\}\}/g;
+          const matches = [];
+          let match;
+          while ((match = regex.exec(selectedPrompt.value.content)) !== null) {
+            matches.push(match[1].trim());
+          }
+          return [...new Set(matches)];
+        });
 
         const filteredPrompts = computed(() => {
           if (!promptSearch.value) {
@@ -1783,18 +1869,20 @@
 
         const createNewPrompt = () => {
           selectedPrompt.value = { name: 'New Prompt', content: '', version: 1, is_active: false };
-          setTimeout(() => {
+          promptTab.value = 'editor';
+          nextTick(() => {
             initMDE();
             mde.value('');
-          }, 0);
+          });
         };
 
         const selectPrompt = (p) => {
           selectedPrompt.value = { ...p };
-          setTimeout(() => {
+          promptTab.value = 'editor';
+          nextTick(() => {
             initMDE();
             mde.value(p.content);
-          }, 0);
+          });
         };
 
         const savePromptAsNew = async () => {
@@ -1874,7 +1962,9 @@
           displayItems, displayFilters, loadDisplayItems, selectedDisplayItem,
           toggleDisplaySource, toggleAllDisplaySources, activeDisplaySources, dynamicDisplaySourceOptions, filteredDisplayItems,
           qa, startQA, exportQA, selectedQaResult,
+          toggleQaSource, toggleAllQaSources, activeQaSources, dynamicQaSourceOptions, filteredQaResults,
           prompts, selectedPrompt, createNewPrompt, selectPrompt, savePromptAsNew, setActivePrompt,
+          promptTab, promptVariables,
           showDeleteModal, confirmDeletePrompt, deletePrompt,
           promptSearch, filteredPrompts, promptHistory,
           setEnv, changeDate
