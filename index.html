@@ -275,6 +275,22 @@
       padding: 3px 9px; border-radius: 20px;
     }
 
+    /* ── PROSE CUSTOMIZATION ── */
+    .prose-original {
+      --tw-prose-body: #9ca3af;
+      --tw-prose-headings: #9ca3af;
+      --tw-prose-links: #9ca3af;
+      --tw-prose-bold: #9ca3af;
+      --tw-prose-quotes: #9ca3af;
+    }
+    .prose-processed {
+      --tw-prose-body: #f3f4f6;
+      --tw-prose-headings: #ffffff;
+      --tw-prose-links: #60a5fa;
+      --tw-prose-bold: #ffffff;
+      --tw-prose-quotes: #f3f4f6;
+    }
+
     /* ── TABS ── */
     .editor-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
     .tab { padding: 8px 16px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; letter-spacing: 0.02em; }
@@ -824,16 +840,34 @@
                 </div>
               </div>
               <div class="content-block">
-                <div class="block-label">摘要</div>
-                <div class="block-text" style="font-family: system-ui, -apple-system, sans-serif;">{{ selectedProcessedItem.summary }}</div>
+                <div class="block-label">标题对比</div>
+                <div class="mb-3">
+                  <div class="text-[11px] text-text-dim mb-1 font-mono uppercase tracking-wider">原始标题</div>
+                  <div class="text-text-muted text-sm" style="font-family: system-ui, -apple-system, sans-serif;">{{ selectedProcessedRawItem?.title || '无' }}</div>
+                </div>
+                <div>
+                  <div class="text-[11px] text-accent mb-1 font-mono uppercase tracking-wider">加工后标题</div>
+                  <div class="text-white text-base font-medium" style="font-family: system-ui, -apple-system, sans-serif;">{{ selectedProcessedItem.processed_title }}</div>
+                </div>
               </div>
               <div class="content-block">
-                <div class="block-label">加工后内容</div>
-                <div class="block-text prose prose-invert max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="selectedProcessedItem.processed_content"></div>
+                <div class="block-label">核心信息</div>
+                <div class="mb-4">
+                  <div class="text-[11px] text-text-muted mb-1 font-mono uppercase tracking-wider">摘要 (Summary)</div>
+                  <div class="block-text text-white" style="font-family: system-ui, -apple-system, sans-serif;">{{ selectedProcessedItem.summary }}</div>
+                </div>
+                <div v-if="selectedProcessedItem.expert_insight">
+                  <div class="text-[11px] text-text-muted mb-1 font-mono uppercase tracking-wider">专家洞察 (Expert Insight)</div>
+                  <div class="block-text italic text-text-muted" style="font-family: system-ui, -apple-system, sans-serif;">"{{ selectedProcessedItem.expert_insight }}"</div>
+                </div>
               </div>
               <div class="content-block" v-if="selectedProcessedRawItem">
                 <div class="block-label">加工前内容</div>
-                <div class="block-text prose prose-invert max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="processedRawContentHtml"></div>
+                <div class="block-text prose prose-invert prose-original max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="processedRawContentHtml"></div>
+              </div>
+              <div class="content-block">
+                <div class="block-label">加工后内容</div>
+                <div class="block-text prose prose-invert prose-processed max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="selectedProcessedItem.processed_content"></div>
               </div>
             </div>
           </div>
