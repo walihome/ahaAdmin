@@ -560,6 +560,296 @@
       border-color: var(--accent);
       color: var(--accent-bright);
     }
+
+    /* ── ANALYTICS PAGE ── */
+    .analytics-summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .analytics-summary-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+    .summary-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .summary-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      letter-spacing: -0.02em;
+    }
+    .summary-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .analytics-highlight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .analytics-highlight-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .highlight-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .highlight-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .highlight-category {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .highlight-rank {
+      margin-left: auto;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--surface3);
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1;
+    }
+    .highlight-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .highlight-stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 14px;
+    }
+    .highlight-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .highlight-stat .stat-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .highlight-stat.main .stat-num {
+      font-size: 24px;
+    }
+    .highlight-stat .stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .highlight-source {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .highlight-bar {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+    .highlight-bar .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Leaderboard */
+    .analytics-leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .leaderboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .leaderboard-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .leaderboard-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface2);
+      padding: 3px;
+      border-radius: 8px;
+    }
+    .lb-tab {
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .lb-tab:hover {
+      color: var(--text-muted);
+    }
+    .lb-tab.active {
+      background: var(--surface3);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .leaderboard-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .leaderboard-item:last-child {
+      border-bottom: none;
+    }
+    .leaderboard-item:hover {
+      background: var(--surface2);
+    }
+    .lb-rank {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-dim);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lb-rank.top-1 {
+      background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
+      color: #1a1a1a;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(255,215,0,0.3);
+    }
+    .lb-rank.top-2 {
+      background: linear-gradient(135deg, #c0c0c0 0%, #a0a0a0 100%);
+      color: #1a1a1a;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(192,192,192,0.3);
+    }
+    .lb-rank.top-3 {
+      background: linear-gradient(135deg, #cd7f32 0%, #b87333 100%);
+      color: #1a1a1a;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(205,127,50,0.3);
+    }
+    .lb-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .lb-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .lb-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .lb-source {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .lb-stats {
+      display: flex;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    .lb-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      min-width: 50px;
+    }
+    .lb-stat-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .lb-stat-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      text-transform: uppercase;
+    }
   </style>
 
 </head>
@@ -1241,9 +1531,13 @@
 
       <!-- PAGE: 数据分析 -->
       <div class="page active" v-if="currentTab === 'analytics'">
-        <div class="flex flex-col h-full w-full bg-dark-bg p-6 overflow-y-auto">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-text">每日爆点数据分析</h2>
+        <div class="flex flex-col h-full w-full bg-dark-bg overflow-hidden">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-7 py-5 border-b border-border bg-surface">
+            <div>
+              <h2 class="text-xl font-extrabold text-text tracking-tight">每日爆点数据分析</h2>
+              <p class="text-xs text-text-dim mt-1 font-mono">Daily Highlights Analytics</p>
+            </div>
             <div class="date-nav">
               <div class="date-nav-btn" @click="changeDate('analytics', -1)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1260,97 +1554,227 @@
             </div>
           </div>
 
-          <div v-if="loading.analytics" class="flex items-center justify-center py-20 text-text-muted">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            加载中...
-          </div>
-          <div v-else-if="!analyticsData.hasData" class="flex items-center justify-center py-20 text-text-muted">
-            当日暂无数据
-          </div>
-          <div v-else class="grid grid-cols-1 gap-6">
+          <!-- Content -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div v-if="loading.analytics" class="flex items-center justify-center py-20 text-text-muted">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              加载中...
+            </div>
             
-            <!-- 曝光量最高 -->
-            <div class="bg-surface rounded-xl border border-border p-5">
-              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                每日曝光量最高
+            <div v-else-if="!analyticsData.hasData" class="flex flex-col items-center justify-center py-20 text-text-dim">
+              <div class="w-20 h-20 rounded-2xl bg-surface border border-border flex items-center justify-center mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-text-muted"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
               </div>
-              <div v-if="analyticsData.topImpression" class="flex flex-col gap-2">
-                <div class="text-lg font-bold text-text">{{ analyticsData.topImpression.title }}</div>
-                <div class="flex items-center gap-4 text-sm text-text-dim">
-                  <span class="text-accent">{{ analyticsData.topImpression.impressions }} 次曝光</span>
-                  <span>来源: {{ analyticsData.topImpression.source_name }}</span>
-                </div>
-              </div>
-              <div v-else class="text-sm text-text-dim">无数据</div>
+              <div class="text-sm font-bold">当日暂无数据</div>
+              <div class="text-xs mt-1 opacity-50">请选择其他日期查看</div>
             </div>
 
-            <!-- 点击量最高 -->
-            <div class="bg-surface rounded-xl border border-border p-5">
-              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                点击量最高
-              </div>
-              <div v-if="analyticsData.topClick" class="flex flex-col gap-2">
-                <div class="text-lg font-bold text-text">{{ analyticsData.topClick.title }}</div>
-                <div class="flex items-center gap-4 text-sm text-text-dim">
-                  <span style="color: var(--green)">{{ analyticsData.topClick.clicks }} 次点击</span>
-                  <span>来源: {{ analyticsData.topClick.source_name }}</span>
+            <div v-else class="space-y-6">
+              <!-- Summary Cards -->
+              <div class="grid grid-cols-5 gap-4">
+                <div class="analytics-summary-card">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #7c6af7 0%, #a78bfa 100%);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                  <div class="summary-value">{{ analyticsData.totalImpressions || 0 }}</div>
+                  <div class="summary-label">总曝光</div>
+                </div>
+                <div class="analytics-summary-card">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #3ecf8e 0%, #10b981 100%);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+                  </div>
+                  <div class="summary-value">{{ analyticsData.totalClicks || 0 }}</div>
+                  <div class="summary-label">总点击</div>
+                </div>
+                <div class="analytics-summary-card">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #f5a623 0%, #f59e0b 100%);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </div>
+                  <div class="summary-value">{{ analyticsData.totalOriginalClicks || 0 }}</div>
+                  <div class="summary-label">点击原文</div>
+                </div>
+                <div class="analytics-summary-card">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  </div>
+                  <div class="summary-value">{{ ((analyticsData.avgCtr || 0) * 100).toFixed(1) }}%</div>
+                  <div class="summary-label">平均点击率</div>
+                </div>
+                <div class="analytics-summary-card">
+                  <div class="summary-icon" style="background: linear-gradient(135deg, #e85858 0%, #ef4444 100%);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div class="summary-value">{{ analyticsData.totalItems || 0 }}</div>
+                  <div class="summary-label">内容数</div>
                 </div>
               </div>
-              <div v-else class="text-sm text-text-dim">无数据</div>
-            </div>
 
-            <!-- 点击原文量最高 -->
-            <div class="bg-surface rounded-xl border border-border p-5">
-              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                点击原文量最高
-              </div>
-              <div v-if="analyticsData.topOriginalClick" class="flex flex-col gap-2">
-                <div class="text-lg font-bold text-text">{{ analyticsData.topOriginalClick.title }}</div>
-                <div class="flex items-center gap-4 text-sm text-text-dim">
-                  <span style="color: #a78bfa">{{ analyticsData.topOriginalClick.original_clicks }} 次点击原文</span>
-                  <span>来源: {{ analyticsData.topOriginalClick.source_name }}</span>
+              <!-- Top Performers Grid -->
+              <div class="grid grid-cols-2 gap-5">
+                <!-- 曝光量最高 -->
+                <div class="analytics-highlight-card" v-if="analyticsData.topImpression">
+                  <div class="highlight-header">
+                    <div class="highlight-badge" style="background: linear-gradient(135deg, #7c6af7 0%, #a78bfa 100%);">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </div>
+                    <span class="highlight-category">曝光量 TOP 1</span>
+                    <div class="highlight-rank">#1</div>
+                  </div>
+                  <div class="highlight-title">{{ analyticsData.topImpression.title }}</div>
+                  <div class="highlight-stats">
+                    <div class="highlight-stat main" style="color: var(--accent-bright);">
+                      <span class="stat-num">{{ analyticsData.topImpression.impressions }}</span>
+                      <span class="stat-label">次曝光</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ analyticsData.topImpression.clicks || 0 }}</span>
+                      <span class="stat-label">点击</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ ((analyticsData.topImpression.ctr || 0) * 100).toFixed(1) }}%</span>
+                      <span class="stat-label">CTR</span>
+                    </div>
+                  </div>
+                  <div class="highlight-source">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    {{ analyticsData.topImpression.source_name }}
+                  </div>
+                </div>
+
+                <!-- 点击量最高 -->
+                <div class="analytics-highlight-card" v-if="analyticsData.topClick">
+                  <div class="highlight-header">
+                    <div class="highlight-badge" style="background: linear-gradient(135deg, #3ecf8e 0%, #10b981 100%);">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+                    </div>
+                    <span class="highlight-category">点击量 TOP 1</span>
+                    <div class="highlight-rank">#1</div>
+                  </div>
+                  <div class="highlight-title">{{ analyticsData.topClick.title }}</div>
+                  <div class="highlight-stats">
+                    <div class="highlight-stat main" style="color: var(--green);">
+                      <span class="stat-num">{{ analyticsData.topClick.clicks }}</span>
+                      <span class="stat-label">次点击</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ analyticsData.topClick.impressions || 0 }}</span>
+                      <span class="stat-label">曝光</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ ((analyticsData.topClick.ctr || 0) * 100).toFixed(1) }}%</span>
+                      <span class="stat-label">CTR</span>
+                    </div>
+                  </div>
+                  <div class="highlight-source">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    {{ analyticsData.topClick.source_name }}
+                  </div>
+                </div>
+
+                <!-- 点击原文量最高 -->
+                <div class="analytics-highlight-card" v-if="analyticsData.topOriginalClick">
+                  <div class="highlight-header">
+                    <div class="highlight-badge" style="background: linear-gradient(135deg, #f5a623 0%, #f59e0b 100%);">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                    <span class="highlight-category">原文点击 TOP 1</span>
+                    <div class="highlight-rank">#1</div>
+                  </div>
+                  <div class="highlight-title">{{ analyticsData.topOriginalClick.title }}</div>
+                  <div class="highlight-stats">
+                    <div class="highlight-stat main" style="color: var(--orange);">
+                      <span class="stat-num">{{ analyticsData.topOriginalClick.original_clicks }}</span>
+                      <span class="stat-label">次点击原文</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ analyticsData.topOriginalClick.impressions || 0 }}</span>
+                      <span class="stat-label">曝光</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ ((analyticsData.topOriginalClick.octr || 0) * 100).toFixed(1) }}%</span>
+                      <span class="stat-label">原文率</span>
+                    </div>
+                  </div>
+                  <div class="highlight-source">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    {{ analyticsData.topOriginalClick.source_name }}
+                  </div>
+                </div>
+
+                <!-- 点击率最高 -->
+                <div class="analytics-highlight-card" v-if="analyticsData.topCtr">
+                  <div class="highlight-header">
+                    <div class="highlight-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <span class="highlight-category">点击率 TOP 1</span>
+                    <div class="highlight-rank">#1</div>
+                  </div>
+                  <div class="highlight-title">{{ analyticsData.topCtr.title }}</div>
+                  <div class="highlight-stats">
+                    <div class="highlight-stat main" style="color: var(--blue);">
+                      <span class="stat-num">{{ ((analyticsData.topCtr.ctr || 0) * 100).toFixed(1) }}%</span>
+                      <span class="stat-label">点击率</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ analyticsData.topCtr.clicks || 0 }}</span>
+                      <span class="stat-label">点击</span>
+                    </div>
+                    <div class="highlight-stat">
+                      <span class="stat-num">{{ analyticsData.topCtr.impressions || 0 }}</span>
+                      <span class="stat-label">曝光</span>
+                    </div>
+                  </div>
+                  <div class="highlight-source">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                    {{ analyticsData.topCtr.source_name }}
+                  </div>
+                  <div class="highlight-bar">
+                    <div class="bar-fill" :style="{ width: ((analyticsData.topCtr.ctr || 0) * 100) + '%', background: 'linear-gradient(90deg, #60a5fa, #3b82f6)' }"></div>
+                  </div>
                 </div>
               </div>
-              <div v-else class="text-sm text-text-dim">无数据</div>
-            </div>
 
-            <!-- 点击率最高 -->
-            <div class="bg-surface rounded-xl border border-border p-5">
-              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                点击率最高
-              </div>
-              <div v-if="analyticsData.topCtr" class="flex flex-col gap-2">
-                <div class="text-lg font-bold text-text">{{ analyticsData.topCtr.title }}</div>
-                <div class="flex items-center gap-4 text-sm text-text-dim">
-                  <span style="color: #facc15">{{ (analyticsData.topCtr.ctr * 100).toFixed(2) }}% 点击率</span>
-                  <span>({{ analyticsData.topCtr.clicks }} / {{ analyticsData.topCtr.impressions }})</span>
-                  <span>来源: {{ analyticsData.topCtr.source_name }}</span>
+              <!-- Leaderboard Section -->
+              <div class="analytics-leaderboard" v-if="analyticsData.leaderboard && analyticsData.leaderboard.length > 0">
+                <div class="leaderboard-header">
+                  <h3 class="leaderboard-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    今日排行榜
+                  </h3>
+                  <div class="leaderboard-tabs">
+                    <button :class="['lb-tab', analyticsData.leaderboardType === 'impression' ? 'active' : '']" @click="analyticsData.leaderboardType = 'impression'">曝光</button>
+                    <button :class="['lb-tab', analyticsData.leaderboardType === 'click' ? 'active' : '']" @click="analyticsData.leaderboardType = 'click'">点击</button>
+                    <button :class="['lb-tab', analyticsData.leaderboardType === 'ctr' ? 'active' : '']" @click="analyticsData.leaderboardType = 'ctr'">点击率</button>
+                  </div>
+                </div>
+                <div class="leaderboard-list">
+                  <div v-for="(item, index) in sortedLeaderboard" :key="item.item_id" class="leaderboard-item">
+                    <div :class="['lb-rank', index < 3 ? 'top-' + (index + 1) : '']">{{ index + 1 }}</div>
+                    <div class="lb-content">
+                      <div class="lb-title">{{ item.title }}</div>
+                      <div class="lb-meta">
+                        <span class="lb-source">{{ item.source_name }}</span>
+                      </div>
+                    </div>
+                    <div class="lb-stats">
+                      <div class="lb-stat-item">
+                        <span class="lb-stat-value">{{ item.impressions }}</span>
+                        <span class="lb-stat-label">曝光</span>
+                      </div>
+                      <div class="lb-stat-item">
+                        <span class="lb-stat-value">{{ item.clicks }}</span>
+                        <span class="lb-stat-label">点击</span>
+                      </div>
+                      <div class="lb-stat-item">
+                        <span class="lb-stat-value" :style="{ color: item.ctr > 0.1 ? 'var(--green)' : 'var(--text)' }">{{ (item.ctr * 100).toFixed(1) }}%</span>
+                        <span class="lb-stat-label">CTR</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div v-else class="text-sm text-text-dim">无数据</div>
             </div>
-
-            <!-- 原文点击率最高 -->
-            <div class="bg-surface rounded-xl border border-border p-5">
-              <div class="text-sm font-bold text-text-muted mb-4 flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                原文点击率最高
-              </div>
-              <div v-if="analyticsData.topOctr" class="flex flex-col gap-2">
-                <div class="text-lg font-bold text-text">{{ analyticsData.topOctr.title }}</div>
-                <div class="flex items-center gap-4 text-sm text-text-dim">
-                  <span style="color: #60a5fa">{{ (analyticsData.topOctr.octr * 100).toFixed(2) }}% 原文点击率</span>
-                  <span>({{ analyticsData.topOctr.original_clicks }} / {{ analyticsData.topOctr.impressions }})</span>
-                  <span>来源: {{ analyticsData.topOctr.source_name }}</span>
-                </div>
-              </div>
-              <div v-else class="text-sm text-text-dim">无数据</div>
-            </div>
-
           </div>
         </div>
       </div>
@@ -2303,13 +2727,34 @@ Aha Index: {aha_index}
           topClick: null,
           topOriginalClick: null,
           topCtr: null,
-          topOctr: null
+          topOctr: null,
+          totalImpressions: 0,
+          totalClicks: 0,
+          totalOriginalClicks: 0,
+          avgCtr: 0,
+          totalItems: 0,
+          leaderboard: [],
+          leaderboardType: 'impression'
+        });
+
+        const sortedLeaderboard = computed(() => {
+          if (!analyticsData.leaderboard || analyticsData.leaderboard.length === 0) return [];
+          const sorted = [...analyticsData.leaderboard];
+          if (analyticsData.leaderboardType === 'impression') {
+            sorted.sort((a, b) => b.impressions - a.impressions);
+          } else if (analyticsData.leaderboardType === 'click') {
+            sorted.sort((a, b) => b.clicks - a.clicks);
+          } else if (analyticsData.leaderboardType === 'ctr') {
+            sorted.sort((a, b) => b.ctr - a.ctr);
+          }
+          return sorted.slice(0, 10);
         });
 
         const loadAnalytics = async () => {
           if (!supabase) return;
           loading.analytics = true;
           analyticsData.hasData = false;
+          analyticsData.leaderboard = [];
           try {
             const { data: events, error } = await supabase
               .from(`user_events${settings.tableSuffix}`)
@@ -2339,6 +2784,19 @@ Aha Index: {aha_index}
               return s;
             });
 
+            // Calculate totals
+            let totalImpressions = 0, totalClicks = 0, totalOriginalClicks = 0;
+            statsArray.forEach(s => {
+              totalImpressions += s.impressions;
+              totalClicks += s.clicks;
+              totalOriginalClicks += s.original_clicks;
+            });
+            analyticsData.totalImpressions = totalImpressions;
+            analyticsData.totalClicks = totalClicks;
+            analyticsData.totalOriginalClicks = totalOriginalClicks;
+            analyticsData.avgCtr = totalImpressions > 0 ? totalClicks / totalImpressions : 0;
+            analyticsData.totalItems = statsArray.length;
+
             const topImpression = [...statsArray].sort((a, b) => b.impressions - a.impressions)[0];
             const topClick = [...statsArray].sort((a, b) => b.clicks - a.clicks)[0];
             const topOriginalClick = [...statsArray].sort((a, b) => b.original_clicks - a.original_clicks)[0];
@@ -2350,7 +2808,7 @@ Aha Index: {aha_index}
             const topOctr = [...poolForRate].sort((a, b) => b.octr - a.octr)[0];
 
             const topItems = [topImpression, topClick, topOriginalClick, topCtr, topOctr].filter(Boolean);
-            const uniqueIds = [...new Set(topItems.map(s => s.item_id))];
+            const uniqueIds = [...new Set(statsArray.map(s => s.item_id))];
 
             let itemDetails = {};
             if (uniqueIds.length > 0) {
@@ -2377,6 +2835,10 @@ Aha Index: {aha_index}
             analyticsData.topOriginalClick = topOriginalClick?.original_clicks > 0 ? enrich(topOriginalClick) : null;
             analyticsData.topCtr = topCtr?.ctr > 0 ? enrich(topCtr) : null;
             analyticsData.topOctr = topOctr?.octr > 0 ? enrich(topOctr) : null;
+            
+            // Build leaderboard
+            analyticsData.leaderboard = statsArray.map(s => enrich(s)).filter(s => s !== null);
+            
             analyticsData.hasData = true;
 
           } catch (e) {
@@ -2453,7 +2915,7 @@ Aha Index: {aha_index}
           promptTab, promptVariables,
           showDeleteModal, confirmDeletePrompt, deletePrompt,
           promptSearch, filteredPrompts, promptHistory,
-          analyticsFilters, analyticsData, loadAnalytics,
+          analyticsFilters, analyticsData, loadAnalytics, sortedLeaderboard,
           setEnv, changeDate
         };
       }
