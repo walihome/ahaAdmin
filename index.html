@@ -562,149 +562,6 @@
     }
 
     /* ── ANALYTICS PAGE ── */
-    .analytics-summary-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-    .analytics-summary-card:hover {
-      border-color: var(--border-bright);
-      transform: translateY(-2px);
-    }
-    .summary-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .summary-value {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text);
-      font-family: system-ui, -apple-system, sans-serif;
-      letter-spacing: -0.02em;
-    }
-    .summary-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .analytics-highlight-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 22px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.2s;
-    }
-    .analytics-highlight-card:hover {
-      border-color: var(--border-bright);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    }
-    .highlight-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .highlight-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .highlight-category {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .highlight-rank {
-      margin-left: auto;
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--surface3);
-      font-family: system-ui, -apple-system, sans-serif;
-      line-height: 1;
-    }
-    .highlight-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.4;
-      margin-bottom: 16px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .highlight-stats {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 14px;
-    }
-    .highlight-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .highlight-stat .stat-num {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text);
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .highlight-stat.main .stat-num {
-      font-size: 24px;
-    }
-    .highlight-stat .stat-label {
-      font-size: 10px;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .highlight-source {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-dim);
-      font-family: var(--mono);
-    }
-    .highlight-bar {
-      height: 4px;
-      background: var(--surface2);
-      border-radius: 2px;
-      margin-top: 12px;
-      overflow: hidden;
-    }
-    .highlight-bar .bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 0.5s ease;
-    }
-
     /* Leaderboard */
     .analytics-leaderboard {
       background: var(--surface);
@@ -754,7 +611,6 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .leaderboard-list {
-      max-height: 400px;
       overflow-y: auto;
     }
     .leaderboard-item {
@@ -1570,171 +1426,6 @@
             </div>
 
             <div v-else class="space-y-6">
-              <!-- Summary Cards -->
-              <div class="grid grid-cols-5 gap-4">
-                <div class="analytics-summary-card">
-                  <div class="summary-icon" style="background: linear-gradient(135deg, #7c6af7 0%, #a78bfa 100%);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  </div>
-                  <div class="summary-value">{{ analyticsData.totalImpressions || 0 }}</div>
-                  <div class="summary-label">总曝光</div>
-                </div>
-                <div class="analytics-summary-card">
-                  <div class="summary-icon" style="background: linear-gradient(135deg, #3ecf8e 0%, #10b981 100%);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-                  </div>
-                  <div class="summary-value">{{ analyticsData.totalClicks || 0 }}</div>
-                  <div class="summary-label">总点击</div>
-                </div>
-                <div class="analytics-summary-card">
-                  <div class="summary-icon" style="background: linear-gradient(135deg, #f5a623 0%, #f59e0b 100%);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </div>
-                  <div class="summary-value">{{ analyticsData.totalOriginalClicks || 0 }}</div>
-                  <div class="summary-label">点击原文</div>
-                </div>
-                <div class="analytics-summary-card">
-                  <div class="summary-icon" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                  </div>
-                  <div class="summary-value">{{ ((analyticsData.avgCtr || 0) * 100).toFixed(1) }}%</div>
-                  <div class="summary-label">平均点击率</div>
-                </div>
-                <div class="analytics-summary-card">
-                  <div class="summary-icon" style="background: linear-gradient(135deg, #e85858 0%, #ef4444 100%);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  </div>
-                  <div class="summary-value">{{ analyticsData.totalItems || 0 }}</div>
-                  <div class="summary-label">内容数</div>
-                </div>
-              </div>
-
-              <!-- Top Performers Grid -->
-              <div class="grid grid-cols-2 gap-5">
-                <!-- 曝光量最高 -->
-                <div class="analytics-highlight-card" v-if="analyticsData.topImpression">
-                  <div class="highlight-header">
-                    <div class="highlight-badge" style="background: linear-gradient(135deg, #7c6af7 0%, #a78bfa 100%);">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </div>
-                    <span class="highlight-category">曝光量 TOP 1</span>
-                    <div class="highlight-rank">#1</div>
-                  </div>
-                  <div class="highlight-title">{{ analyticsData.topImpression.title }}</div>
-                  <div class="highlight-stats">
-                    <div class="highlight-stat main" style="color: var(--accent-bright);">
-                      <span class="stat-num">{{ analyticsData.topImpression.impressions }}</span>
-                      <span class="stat-label">次曝光</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ analyticsData.topImpression.clicks || 0 }}</span>
-                      <span class="stat-label">点击</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ ((analyticsData.topImpression.ctr || 0) * 100).toFixed(1) }}%</span>
-                      <span class="stat-label">CTR</span>
-                    </div>
-                  </div>
-                  <div class="highlight-source">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    {{ analyticsData.topImpression.source_name }}
-                  </div>
-                </div>
-
-                <!-- 点击量最高 -->
-                <div class="analytics-highlight-card" v-if="analyticsData.topClick">
-                  <div class="highlight-header">
-                    <div class="highlight-badge" style="background: linear-gradient(135deg, #3ecf8e 0%, #10b981 100%);">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-                    </div>
-                    <span class="highlight-category">点击量 TOP 1</span>
-                    <div class="highlight-rank">#1</div>
-                  </div>
-                  <div class="highlight-title">{{ analyticsData.topClick.title }}</div>
-                  <div class="highlight-stats">
-                    <div class="highlight-stat main" style="color: var(--green);">
-                      <span class="stat-num">{{ analyticsData.topClick.clicks }}</span>
-                      <span class="stat-label">次点击</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ analyticsData.topClick.impressions || 0 }}</span>
-                      <span class="stat-label">曝光</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ ((analyticsData.topClick.ctr || 0) * 100).toFixed(1) }}%</span>
-                      <span class="stat-label">CTR</span>
-                    </div>
-                  </div>
-                  <div class="highlight-source">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    {{ analyticsData.topClick.source_name }}
-                  </div>
-                </div>
-
-                <!-- 点击原文量最高 -->
-                <div class="analytics-highlight-card" v-if="analyticsData.topOriginalClick">
-                  <div class="highlight-header">
-                    <div class="highlight-badge" style="background: linear-gradient(135deg, #f5a623 0%, #f59e0b 100%);">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    </div>
-                    <span class="highlight-category">原文点击 TOP 1</span>
-                    <div class="highlight-rank">#1</div>
-                  </div>
-                  <div class="highlight-title">{{ analyticsData.topOriginalClick.title }}</div>
-                  <div class="highlight-stats">
-                    <div class="highlight-stat main" style="color: var(--orange);">
-                      <span class="stat-num">{{ analyticsData.topOriginalClick.original_clicks }}</span>
-                      <span class="stat-label">次点击原文</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ analyticsData.topOriginalClick.impressions || 0 }}</span>
-                      <span class="stat-label">曝光</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ ((analyticsData.topOriginalClick.octr || 0) * 100).toFixed(1) }}%</span>
-                      <span class="stat-label">原文率</span>
-                    </div>
-                  </div>
-                  <div class="highlight-source">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    {{ analyticsData.topOriginalClick.source_name }}
-                  </div>
-                </div>
-
-                <!-- 点击率最高 -->
-                <div class="analytics-highlight-card" v-if="analyticsData.topCtr">
-                  <div class="highlight-header">
-                    <div class="highlight-badge" style="background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    </div>
-                    <span class="highlight-category">点击率 TOP 1</span>
-                    <div class="highlight-rank">#1</div>
-                  </div>
-                  <div class="highlight-title">{{ analyticsData.topCtr.title }}</div>
-                  <div class="highlight-stats">
-                    <div class="highlight-stat main" style="color: var(--blue);">
-                      <span class="stat-num">{{ ((analyticsData.topCtr.ctr || 0) * 100).toFixed(1) }}%</span>
-                      <span class="stat-label">点击率</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ analyticsData.topCtr.clicks || 0 }}</span>
-                      <span class="stat-label">点击</span>
-                    </div>
-                    <div class="highlight-stat">
-                      <span class="stat-num">{{ analyticsData.topCtr.impressions || 0 }}</span>
-                      <span class="stat-label">曝光</span>
-                    </div>
-                  </div>
-                  <div class="highlight-source">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-                    {{ analyticsData.topCtr.source_name }}
-                  </div>
-                  <div class="highlight-bar">
-                    <div class="bar-fill" :style="{ width: ((analyticsData.topCtr.ctr || 0) * 100) + '%', background: 'linear-gradient(90deg, #60a5fa, #3b82f6)' }"></div>
-                  </div>
-                </div>
-              </div>
-
               <!-- Leaderboard Section -->
               <div class="analytics-leaderboard" v-if="analyticsData.leaderboard && analyticsData.leaderboard.length > 0">
                 <div class="leaderboard-header">
@@ -2723,16 +2414,6 @@ Aha Index: {aha_index}
         const analyticsFilters = reactive({ date: todayStr });
         const analyticsData = reactive({
           hasData: false,
-          topImpression: null,
-          topClick: null,
-          topOriginalClick: null,
-          topCtr: null,
-          topOctr: null,
-          totalImpressions: 0,
-          totalClicks: 0,
-          totalOriginalClicks: 0,
-          avgCtr: 0,
-          totalItems: 0,
           leaderboard: [],
           leaderboardType: 'impression'
         });
@@ -2784,42 +2465,18 @@ Aha Index: {aha_index}
               return s;
             });
 
-            // Calculate totals
-            let totalImpressions = 0, totalClicks = 0, totalOriginalClicks = 0;
-            statsArray.forEach(s => {
-              totalImpressions += s.impressions;
-              totalClicks += s.clicks;
-              totalOriginalClicks += s.original_clicks;
-            });
-            analyticsData.totalImpressions = totalImpressions;
-            analyticsData.totalClicks = totalClicks;
-            analyticsData.totalOriginalClicks = totalOriginalClicks;
-            analyticsData.avgCtr = totalImpressions > 0 ? totalClicks / totalImpressions : 0;
-            analyticsData.totalItems = statsArray.length;
-
-            const topImpression = [...statsArray].sort((a, b) => b.impressions - a.impressions)[0];
-            const topClick = [...statsArray].sort((a, b) => b.clicks - a.clicks)[0];
-            const topOriginalClick = [...statsArray].sort((a, b) => b.original_clicks - a.original_clicks)[0];
-            
-            const validForRate = statsArray.filter(s => s.impressions >= 10);
-            const poolForRate = validForRate.length > 0 ? validForRate : statsArray;
-            
-            const topCtr = [...poolForRate].sort((a, b) => b.ctr - a.ctr)[0];
-            const topOctr = [...poolForRate].sort((a, b) => b.octr - a.octr)[0];
-
-            const topItems = [topImpression, topClick, topOriginalClick, topCtr, topOctr].filter(Boolean);
             const uniqueIds = [...new Set(statsArray.map(s => s.item_id))];
 
             let itemDetails = {};
             if (uniqueIds.length > 0) {
               const { data: items } = await supabase
                 .from(`display_items${settings.tableSuffix}`)
-                .select('item_id, processed_title, source_name')
-                .in('item_id', uniqueIds);
+                .select('processed_item_id, processed_title, source_name')
+                .in('processed_item_id', uniqueIds);
               
               if (items) {
                 items.forEach(item => {
-                  itemDetails[item.item_id] = item;
+                  itemDetails[item.processed_item_id] = item;
                 });
               }
             }
@@ -2829,12 +2486,6 @@ Aha Index: {aha_index}
               const detail = itemDetails[stat.item_id] || { processed_title: '未知内容', source_name: '未知' };
               return { ...stat, title: detail.processed_title, source_name: detail.source_name };
             };
-
-            analyticsData.topImpression = topImpression?.impressions > 0 ? enrich(topImpression) : null;
-            analyticsData.topClick = topClick?.clicks > 0 ? enrich(topClick) : null;
-            analyticsData.topOriginalClick = topOriginalClick?.original_clicks > 0 ? enrich(topOriginalClick) : null;
-            analyticsData.topCtr = topCtr?.ctr > 0 ? enrich(topCtr) : null;
-            analyticsData.topOctr = topOctr?.octr > 0 ? enrich(topOctr) : null;
             
             // Build leaderboard
             analyticsData.leaderboard = statsArray.map(s => enrich(s)).filter(s => s !== null);
