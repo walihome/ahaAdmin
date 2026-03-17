@@ -1437,6 +1437,8 @@
                     <button :class="['lb-tab', analyticsData.leaderboardType === 'impression' ? 'active' : '']" @click="analyticsData.leaderboardType = 'impression'">曝光</button>
                     <button :class="['lb-tab', analyticsData.leaderboardType === 'click' ? 'active' : '']" @click="analyticsData.leaderboardType = 'click'">点击</button>
                     <button :class="['lb-tab', analyticsData.leaderboardType === 'ctr' ? 'active' : '']" @click="analyticsData.leaderboardType = 'ctr'">点击率</button>
+                    <button :class="['lb-tab', analyticsData.leaderboardType === 'original_click' ? 'active' : '']" @click="analyticsData.leaderboardType = 'original_click'">原文点击</button>
+                    <button :class="['lb-tab', analyticsData.leaderboardType === 'octr' ? 'active' : '']" @click="analyticsData.leaderboardType = 'octr'">原文率</button>
                   </div>
                 </div>
                 <div class="leaderboard-list">
@@ -1460,6 +1462,14 @@
                       <div class="lb-stat-item">
                         <span class="lb-stat-value" :style="{ color: item.ctr > 0.1 ? 'var(--green)' : 'var(--text)' }">{{ (item.ctr * 100).toFixed(1) }}%</span>
                         <span class="lb-stat-label">CTR</span>
+                      </div>
+                      <div class="lb-stat-item">
+                        <span class="lb-stat-value">{{ item.original_clicks }}</span>
+                        <span class="lb-stat-label">原文点击</span>
+                      </div>
+                      <div class="lb-stat-item">
+                        <span class="lb-stat-value" :style="{ color: item.octr > 0.1 ? 'var(--orange)' : 'var(--text)' }">{{ (item.octr * 100).toFixed(1) }}%</span>
+                        <span class="lb-stat-label">原文率</span>
                       </div>
                     </div>
                   </div>
@@ -2427,6 +2437,10 @@ Aha Index: {aha_index}
             sorted.sort((a, b) => b.clicks - a.clicks);
           } else if (analyticsData.leaderboardType === 'ctr') {
             sorted.sort((a, b) => b.ctr - a.ctr);
+          } else if (analyticsData.leaderboardType === 'original_click') {
+            sorted.sort((a, b) => b.original_clicks - a.original_clicks);
+          } else if (analyticsData.leaderboardType === 'octr') {
+            sorted.sort((a, b) => b.octr - a.octr);
           }
           return sorted.slice(0, 10);
         });
