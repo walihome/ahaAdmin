@@ -958,6 +958,8 @@
             <div class="detail-topbar">
               <div class="mini-stat">AHA指数 <span class="mini-stat-val" style="color:var(--green)">{{ selectedProcessedItem.aha_index }}</span></div>
               <div class="divider-v"></div>
+              <div class="mini-stat">来源 <span class="mini-stat-val">{{ selectedProcessedItem.source_name || '未知' }}</span></div>
+              <div class="divider-v"></div>
               <div class="mini-stat">模型 <span class="mini-stat-val">{{ selectedProcessedItem.model }}</span></div>
               <div class="divider-v"></div>
               <div class="mini-stat">更新 <span class="mini-stat-val">{{ new Date(selectedProcessedItem.generated_at).toLocaleDateString() }}</span></div>
@@ -980,7 +982,7 @@
               </div>
             </div>
             <div class="detail-body">
-              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px;">
                 <div class="qa-score-card pass">
                   <div class="score-label">AHA 指数</div>
                   <div class="score-val pass">{{ selectedProcessedItem.aha_index }}</div>
@@ -990,6 +992,11 @@
                   <div class="score-label">分类</div>
                   <div class="score-val pass" style="font-size:26px">{{ selectedProcessedItem.category }}</div>
                   <div class="score-desc">内容分类准确</div>
+                </div>
+                <div class="qa-score-card pass">
+                  <div class="score-label">来源</div>
+                  <div class="score-val pass" style="font-size:26px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="selectedProcessedItem.source_name">{{ selectedProcessedItem.source_name || '未知' }}</div>
+                  <div class="score-desc">原始内容来源</div>
                 </div>
                 <div class="qa-score-card pass">
                   <div class="score-label">模型</div>
