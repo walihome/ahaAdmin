@@ -178,6 +178,11 @@
     }
     .tag-pending { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: var(--orange); }
     .tag-done { background: var(--green-glow); border-color: rgba(62,207,142,0.3); color: var(--green); }
+    .tag-selected { background: rgba(62,207,142,0.1); color: var(--green); border-color: rgba(62,207,142,0.2); }
+    .tag-limit { background: rgba(245,166,35,0.1); color: var(--orange); border-color: rgba(245,166,35,0.2); }
+    .tag-ai-fail { background: rgba(255,107,107,0.1); color: var(--red); border-color: rgba(255,107,107,0.2); }
+    .tag-link-fail { background: rgba(142,146,153,0.1); color: var(--text-dim); border-color: rgba(142,146,153,0.2); }
+    .tag-dedup { background: rgba(142,146,153,0.1); color: var(--text-dim); border-color: rgba(142,146,153,0.2); }
     .tag-fail { background: var(--red-glow); border-color: rgba(232,88,88,0.3); color: var(--red); }
     .tag-processing { background: rgba(78,168,232,0.1); border-color: rgba(78,168,232,0.3); color: var(--blue); }
     .card-preview { font-family: var(--mono); font-size: 11px; color: var(--text-muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -925,7 +930,11 @@
                    @click="selectedProcessedItem = item">
                 <div class="card-top">
                   <div class="card-title">{{ item.processed_title }}</div>
-                  <span class="card-tag tag-done">已发布</span>
+                  <span v-if="item.rank_action && item.rank_action !== 'selected'" 
+                        :class="['card-tag', getRankActionClass(item.rank_action)]">
+                    {{ getRankActionLabel(item.rank_action) }}
+                  </span>
+                  <span v-else class="card-tag tag-done">已发布</span>
                 </div>
                 <div class="card-preview">{{ item.summary }}</div>
                 <div class="card-meta">
@@ -982,6 +991,27 @@
               </div>
             </div>
             <div class="detail-body">
+              <div v-if="selectedProcessedItem.rank_action" class="content-block">
+                <div class="block-label">精排审计 (Ranking Audit)</div>
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="mini-stat">动作 <span :class="['card-tag', getRankActionClass(selectedProcessedItem.rank_action)]">{{ getRankActionLabel(selectedProcessedItem.rank_action) }}</span></div>
+                  <div class="mini-stat">精排得分 <span class="mini-stat-val text-accent">{{ selectedProcessedItem.rank_score || '-' }}</span></div>
+                  <div class="mini-stat">分组 <span class="mini-stat-val">{{ selectedProcessedItem.rank_group || '-' }}</span></div>
+                </div>
+                
+                <div v-if="selectedProcessedItem.rank_detail" class="bg-surface2 rounded-xl p-4 border border-border">
+                  <div v-if="selectedProcessedItem.rank_detail.comment" class="text-sm text-text mb-3 pb-3 border-border border-b italic">
+                    "{{ selectedProcessedItem.rank_detail.comment }}"
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div v-for="(val, key) in filteredRankDetail(selectedProcessedItem.rank_detail)" :key="key" class="flex flex-col">
+                      <span class="text-[10px] text-text-dim uppercase tracking-wider">{{ getRankDetailLabel(key) }}</span>
+                      <span class="text-sm font-bold" :class="val < 0 ? 'text-red' : 'text-text'">{{ val }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px;">
                 <div class="qa-score-card pass">
                   <div class="score-label">AHA 指数</div>
@@ -2572,6 +2602,48 @@ Aha Index: {aha_index}
           }
         });
 
+        const getRankActionLabel = (action) => {
+          const labels = {
+            'selected': '入选',
+            'filtered_by_limit': '截断',
+            'filtered_by_ai': 'AI淘汰',
+            'filtered_by_link': '链接失效',
+            'filtered_by_dedup': '重复'
+          };
+          return labels[action] || action;
+        };
+
+        const getRankActionClass = (action) => {
+          const classes = {
+            'selected': 'tag-selected',
+            'filtered_by_limit': 'tag-limit',
+            'filtered_by_ai': 'tag-ai-fail',
+            'filtered_by_link': 'tag-link-fail',
+            'filtered_by_dedup': 'tag-dedup'
+          };
+          return classes[action] || '';
+        };
+
+        const getRankDetailLabel = (key) => {
+          const labels = {
+            'actionability': '可操作性',
+            'tech_depth': '技术深度',
+            'impact': '影响力',
+            'scarcity': '稀缺性',
+            'audience_fit': '受众匹配',
+            'marketing_penalty': '营销惩罚',
+            'duplicate_penalty': '重复惩罚',
+            'sort_by': '排序依据'
+          };
+          return labels[key] || key;
+        };
+
+        const filteredRankDetail = (detail) => {
+          if (!detail) return {};
+          const { comment, ...rest } = detail;
+          return rest;
+        };
+
         return {
           currentTab, showSettings, settings, saveSettings, testConnection, testingConnection, toast,
           stats, sourceOptions,
@@ -2588,7 +2660,8 @@ Aha Index: {aha_index}
           showDeleteModal, confirmDeletePrompt, deletePrompt,
           promptSearch, filteredPrompts, promptHistory,
           analyticsFilters, analyticsData, loadAnalytics, sortedLeaderboard,
-          setEnv, changeDate
+          setEnv, changeDate,
+          getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRankDetail
         };
       }
     }).mount('#app');
