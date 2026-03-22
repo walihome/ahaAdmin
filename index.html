@@ -967,6 +967,8 @@
             <div class="detail-topbar">
               <div class="mini-stat">AHA指数 <span class="mini-stat-val" style="color:var(--green)">{{ selectedProcessedItem.aha_index }}</span></div>
               <div class="divider-v"></div>
+              <div class="mini-stat">分类 <span class="mini-stat-val">{{ selectedProcessedItem.category }}</span></div>
+              <div class="divider-v"></div>
               <div class="mini-stat">来源 <span class="mini-stat-val">{{ selectedProcessedItem.source_name || '未知' }}</span></div>
               <div class="divider-v"></div>
               <div class="mini-stat">模型 <span class="mini-stat-val">{{ selectedProcessedItem.model }}</span></div>
@@ -991,10 +993,10 @@
               </div>
             </div>
             <div class="detail-body">
-              <div v-if="selectedProcessedItem.rank_action" class="content-block">
+              <div v-if="selectedProcessedItem.rank_action || selectedProcessedItem.rank_score || selectedProcessedItem.rank_detail" class="content-block">
                 <div class="block-label">精排审计 (Ranking Audit)</div>
                 <div class="flex items-center gap-4 mb-4">
-                  <div class="mini-stat">动作 <span :class="['card-tag', getRankActionClass(selectedProcessedItem.rank_action)]">{{ getRankActionLabel(selectedProcessedItem.rank_action) }}</span></div>
+                  <div class="mini-stat">动作 <span :class="['card-tag', getRankActionClass(selectedProcessedItem.rank_action)]">{{ getRankActionLabel(selectedProcessedItem.rank_action) || '已入选' }}</span></div>
                   <div class="mini-stat">精排得分 <span class="mini-stat-val text-accent">{{ selectedProcessedItem.rank_score || '-' }}</span></div>
                   <div class="mini-stat">分组 <span class="mini-stat-val">{{ selectedProcessedItem.rank_group || '-' }}</span></div>
                 </div>
@@ -1012,28 +1014,6 @@
                 </div>
               </div>
 
-              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px;">
-                <div class="qa-score-card pass">
-                  <div class="score-label">AHA 指数</div>
-                  <div class="score-val pass">{{ selectedProcessedItem.aha_index }}</div>
-                  <div class="score-desc">信息密度高，亮点突出</div>
-                </div>
-                <div class="qa-score-card pass">
-                  <div class="score-label">分类</div>
-                  <div class="score-val pass" style="font-size:26px">{{ selectedProcessedItem.category }}</div>
-                  <div class="score-desc">内容分类准确</div>
-                </div>
-                <div class="qa-score-card pass">
-                  <div class="score-label">来源</div>
-                  <div class="score-val pass" style="font-size:26px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="selectedProcessedItem.source_name">{{ selectedProcessedItem.source_name || '未知' }}</div>
-                  <div class="score-desc">原始内容来源</div>
-                </div>
-                <div class="qa-score-card pass">
-                  <div class="score-label">模型</div>
-                  <div class="score-val pass" style="font-size:26px">{{ selectedProcessedItem.model }}</div>
-                  <div class="score-desc">生成模型版本</div>
-                </div>
-              </div>
               <div class="content-block">
                 <div class="block-label">标题对比</div>
                 <div class="mb-3">
