@@ -3,7 +3,7 @@ import { ref, shallowRef } from 'vue'
 
 const SUPABASE_URL = 'https://wyhpcfjtmtitorinkevj.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_Mhngg1gf4z4dkj-xh5TsMg_Pz3crwfo'
-const ALLOWED_USERS: string[] = []
+const ALLOWED_USERS: string[] = ['dooocs']
 
 const supabaseRef = shallowRef<SupabaseClient>(createClient(SUPABASE_URL, SUPABASE_ANON_KEY))
 
