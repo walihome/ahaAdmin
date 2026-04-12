@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import { getDuration } from '@/composables/useHelpers'
 import EmptyState from '@/components/EmptyState.vue'
 
 const { supabase } = useSupabase()
+const { tableName } = useSettings()
 const { showToast } = useToast()
 
 const pipelineRuns = ref<any[]>([])
@@ -16,7 +18,7 @@ const loading = reactive({ runs: false, scraperRuns: false })
 async function loadItems() {
   loading.runs = true
   try {
-    const { data, error } = await supabase.value.from('pipeline_runs').select('*').order('started_at', { ascending: false }).limit(50)
+    const { data, error } = await supabase.value.from(tableName('pipeline_runs')).select('*').order('started_at', { ascending: false }).limit(50)
     if (error) throw error; pipelineRuns.value = data || []
   } catch (e: any) { showToast(e.message) }
   finally { loading.runs = false }
@@ -25,7 +27,7 @@ async function loadItems() {
 async function selectRun(pr: any) {
   selectedRun.value = pr; loading.scraperRuns = true; scraperRuns.value = []
   try {
-    const { data, error } = await supabase.value.from('scraper_runs').select('*').eq('pipeline_run_id', pr.id).order('started_at')
+    const { data, error } = await supabase.value.from(tableName('scraper_runs')).select('*').eq('pipeline_run_id', pr.id).order('started_at')
     if (error) throw error; scraperRuns.value = data || []
   } catch (e: any) { showToast(e.message) }
   finally { loading.scraperRuns = false }

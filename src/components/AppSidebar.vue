@@ -10,6 +10,7 @@ const props = defineProps<{
   displayCount: number
   scraperCount: number
   promptCount: number
+  qaCount?: number
 }>()
 
 const emit = defineEmits<{
@@ -27,7 +28,7 @@ const tabs = [
     { key: 'raw', label: '原始内容', icon: 'doc', countProp: 'rawCount' },
     { key: 'processed', label: '加工内容', icon: 'radio', countProp: 'processedCount' },
     { key: 'display', label: '展示内容', icon: 'book', countProp: 'displayCount' },
-    { key: 'qa', label: 'AI 质检', icon: 'check' },
+    { key: 'qa', label: 'AI 质检', icon: 'check', countProp: 'qaCount' },
   ]},
   { section: '配置管理', items: [
     { key: 'scrapers', label: '数据源管理', icon: 'globe', countProp: 'scraperCount' },

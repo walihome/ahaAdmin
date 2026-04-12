@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ModalWrapper from '@/components/ModalWrapper.vue'
 
 const { supabase } = useSupabase()
+const { tableName } = useSettings()
 const { showToast } = useToast()
 
 const subTab = ref('groups')
@@ -30,18 +32,18 @@ const tsModal = reactive({
 
 async function loadRankGroups() {
   loading.rankGroups = true
-  try { const { data, error } = await supabase.value.from('rank_group_configs').select('*').order('sort_order'); if (error) throw error; rankGroupConfigs.value = data || [] }
+  try { const { data, error } = await supabase.value.from(tableName('rank_group_configs')).select('*').order('sort_order'); if (error) throw error; rankGroupConfigs.value = data || [] }
   catch (e: any) { showToast(e.message) } finally { loading.rankGroups = false }
 }
 
 async function loadTagSlots() {
   loading.tagSlots = true
-  try { const { data, error } = await supabase.value.from('tag_slot_configs').select('*').order('tag_name'); if (error) throw error; tagSlotConfigs.value = data || [] }
+  try { const { data, error } = await supabase.value.from(tableName('tag_slot_configs')).select('*').order('tag_name'); if (error) throw error; tagSlotConfigs.value = data || [] }
   catch (e: any) { showToast(e.message) } finally { loading.tagSlots = false }
 }
 
 async function loadScrapers() {
-  try { const { data } = await supabase.value.from('scraper_configs').select('name').order('name'); scraperConfigs.value = data || [] } catch (_) {}
+  try { const { data } = await supabase.value.from(tableName('scraper_configs')).select('name').order('name'); scraperConfigs.value = data || [] } catch (_) {}
 }
 
 function createRG() { rgModal.isNew = true; rgModal.form = { id: null, group_name: '', source_names: [], limit: 5, must_include: false, sort_order: 10, enabled: true }; rgModal.show = true }
@@ -58,19 +60,19 @@ async function saveRG() {
   const f = rgModal.form
   const payload = { group_name: f.group_name, source_names: f.source_names, limit: f.limit, must_include: f.must_include, sort_order: f.sort_order, enabled: f.enabled }
   try {
-    if (rgModal.isNew) { const { error } = await supabase.value.from('rank_group_configs').insert([payload]); if (error) throw error; showToast('分组已创建') }
-    else { const { error } = await supabase.value.from('rank_group_configs').update(payload).eq('id', f.id); if (error) throw error; showToast('分组已更新') }
+    if (rgModal.isNew) { const { error } = await supabase.value.from(tableName('rank_group_configs')).insert([payload]); if (error) throw error; showToast('分组已创建') }
+    else { const { error } = await supabase.value.from(tableName('rank_group_configs')).update(payload).eq('id', f.id); if (error) throw error; showToast('分组已更新') }
     rgModal.show = false; await loadRankGroups()
   } catch (e: any) { showToast(e.message) }
 }
 
 async function toggleRGEnabled(rg: any) {
-  try { const { error } = await supabase.value.from('rank_group_configs').update({ enabled: !rg.enabled }).eq('id', rg.id); if (error) throw error; rg.enabled = !rg.enabled } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('rank_group_configs')).update({ enabled: !rg.enabled }).eq('id', rg.id); if (error) throw error; rg.enabled = !rg.enabled } catch (e: any) { showToast(e.message) }
 }
 
 async function confirmDeleteRG(rg: any) {
   if (!confirm(`确定要删除分组 "${rg.group_name}" 吗？`)) return
-  try { const { error } = await supabase.value.from('rank_group_configs').delete().eq('id', rg.id); if (error) throw error; showToast('已删除'); await loadRankGroups() } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('rank_group_configs')).delete().eq('id', rg.id); if (error) throw error; showToast('已删除'); await loadRankGroups() } catch (e: any) { showToast(e.message) }
 }
 
 function createTS() { tsModal.isNew = true; tsModal.form = { id: null, tag_name: '', max_slots: 1, min_score: 0, enabled: true }; tsModal.show = true }
@@ -80,19 +82,19 @@ async function saveTS() {
   const f = tsModal.form
   const payload = { tag_name: f.tag_name, max_slots: f.max_slots, min_score: f.min_score, enabled: f.enabled }
   try {
-    if (tsModal.isNew) { const { error } = await supabase.value.from('tag_slot_configs').insert([payload]); if (error) throw error; showToast('标签已创建') }
-    else { const { error } = await supabase.value.from('tag_slot_configs').update(payload).eq('id', f.id); if (error) throw error; showToast('标签已更新') }
+    if (tsModal.isNew) { const { error } = await supabase.value.from(tableName('tag_slot_configs')).insert([payload]); if (error) throw error; showToast('标签已创建') }
+    else { const { error } = await supabase.value.from(tableName('tag_slot_configs')).update(payload).eq('id', f.id); if (error) throw error; showToast('标签已更新') }
     tsModal.show = false; await loadTagSlots()
   } catch (e: any) { showToast(e.message) }
 }
 
 async function toggleTSEnabled(ts: any) {
-  try { const { error } = await supabase.value.from('tag_slot_configs').update({ enabled: !ts.enabled }).eq('id', ts.id); if (error) throw error; ts.enabled = !ts.enabled } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('tag_slot_configs')).update({ enabled: !ts.enabled }).eq('id', ts.id); if (error) throw error; ts.enabled = !ts.enabled } catch (e: any) { showToast(e.message) }
 }
 
 async function confirmDeleteTS(ts: any) {
   if (!confirm(`确定要删除标签 "${ts.tag_name}" 吗？`)) return
-  try { const { error } = await supabase.value.from('tag_slot_configs').delete().eq('id', ts.id); if (error) throw error; showToast('已删除'); await loadTagSlots() } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('tag_slot_configs')).delete().eq('id', ts.id); if (error) throw error; showToast('已删除'); await loadTagSlots() } catch (e: any) { showToast(e.message) }
 }
 
 async function loadItems() { await Promise.all([loadRankGroups(), loadTagSlots(), loadScrapers()]) }

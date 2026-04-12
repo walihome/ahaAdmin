@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ModalWrapper from '@/components/ModalWrapper.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
 const { supabase } = useSupabase()
+const { tableName } = useSettings()
 const { showToast } = useToast()
 
 const templates = ref<any[]>([])
@@ -28,7 +30,7 @@ const filtered = computed(() => {
 
 async function loadItems() {
   try {
-    const { data, error } = await supabase.value.from('prompt_templates').select('*').order('stage').order('name')
+    const { data, error } = await supabase.value.from(tableName('prompt_templates')).select('*').order('stage').order('name')
     if (error) throw error
     templates.value = data || []
     if (templates.value.length > 0 && !selected.value) selected.value = templates.value[0]
@@ -47,8 +49,8 @@ async function save() {
   const f = modal.form
   const payload = { name: f.name, stage: f.stage, template: f.template, model: f.model, model_base_url: f.model_base_url, temperature: f.temperature, max_retries: f.max_retries, request_interval: f.request_interval, enabled: f.enabled, version: f.version }
   try {
-    if (modal.isNew) { const { error } = await supabase.value.from('prompt_templates').insert([payload]); if (error) throw error; showToast('Prompt 已创建') }
-    else { const { error } = await supabase.value.from('prompt_templates').update(payload).eq('id', f.id); if (error) throw error; showToast('Prompt 已更新') }
+    if (modal.isNew) { const { error } = await supabase.value.from(tableName('prompt_templates')).insert([payload]); if (error) throw error; showToast('Prompt 已创建') }
+    else { const { error } = await supabase.value.from(tableName('prompt_templates')).update(payload).eq('id', f.id); if (error) throw error; showToast('Prompt 已更新') }
     modal.show = false; await loadItems()
     if (selected.value?.id === f.id) selected.value = { ...f, ...payload }
   } catch (e: any) { showToast(e.message) }
@@ -58,7 +60,7 @@ async function confirmDelete() {
   if (!selected.value?.id) return
   if (!confirm(`确定要删除 "${selected.value.name}" 吗？`)) return
   try {
-    const { error } = await supabase.value.from('prompt_templates').delete().eq('id', selected.value.id)
+    const { error } = await supabase.value.from(tableName('prompt_templates')).delete().eq('id', selected.value.id)
     if (error) throw error; showToast('已删除'); selected.value = null; await loadItems()
   } catch (e: any) { showToast(e.message) }
 }

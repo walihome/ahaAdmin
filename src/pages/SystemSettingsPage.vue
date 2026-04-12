@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ModalWrapper from '@/components/ModalWrapper.vue'
 
 const { supabase } = useSupabase()
+const { tableName } = useSettings()
 const { showToast } = useToast()
 
 const subTab = ref('params')
@@ -21,19 +23,19 @@ const frModal = reactive({ show: false, isNew: true, form: { id: null as any, ru
 
 async function loadPipelineParams() {
   loading.pipelineParams = true
-  try { const { data, error } = await supabase.value.from('pipeline_params').select('*').order('key'); if (error) throw error; pipelineParams.value = data || [] }
+  try { const { data, error } = await supabase.value.from(tableName('pipeline_params')).select('*').order('key'); if (error) throw error; pipelineParams.value = data || [] }
   catch (e: any) { showToast(e.message) } finally { loading.pipelineParams = false }
 }
 
 async function loadDisplayMetrics() {
   loading.displayMetrics = true
-  try { const { data, error } = await supabase.value.from('display_metrics_configs').select('*').order('content_type'); if (error) throw error; displayMetricsConfigs.value = data || [] }
+  try { const { data, error } = await supabase.value.from(tableName('display_metrics_configs')).select('*').order('content_type'); if (error) throw error; displayMetricsConfigs.value = data || [] }
   catch (e: any) { showToast(e.message) } finally { loading.displayMetrics = false }
 }
 
 async function loadFetchRules() {
   loading.fetchRules = true
-  try { const { data, error } = await supabase.value.from('content_fetch_rules').select('*').order('rule_type').order('value'); if (error) throw error; contentFetchRules.value = data || [] }
+  try { const { data, error } = await supabase.value.from(tableName('content_fetch_rules')).select('*').order('rule_type').order('value'); if (error) throw error; contentFetchRules.value = data || [] }
   catch (e: any) { showToast(e.message) } finally { loading.fetchRules = false }
 }
 
@@ -43,14 +45,14 @@ async function savePP() {
   let value; try { value = JSON.parse(ppModal.valueStr) } catch { value = ppModal.valueStr }
   const payload = { key: ppModal.form.key, value, description: ppModal.form.description }
   try {
-    if (ppModal.isNew) { const { error } = await supabase.value.from('pipeline_params').insert([payload]); if (error) throw error; showToast('参数已创建') }
-    else { const { error } = await supabase.value.from('pipeline_params').update({ value, description: payload.description }).eq('key', payload.key); if (error) throw error; showToast('参数已更新') }
+    if (ppModal.isNew) { const { error } = await supabase.value.from(tableName('pipeline_params')).insert([payload]); if (error) throw error; showToast('参数已创建') }
+    else { const { error } = await supabase.value.from(tableName('pipeline_params')).update({ value, description: payload.description }).eq('key', payload.key); if (error) throw error; showToast('参数已更新') }
     ppModal.show = false; await loadPipelineParams()
   } catch (e: any) { showToast(e.message) }
 }
 async function deletePP(pp: any) {
   if (!confirm(`确定要删除参数 "${pp.key}" 吗？`)) return
-  try { const { error } = await supabase.value.from('pipeline_params').delete().eq('key', pp.key); if (error) throw error; showToast('已删除'); await loadPipelineParams() } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('pipeline_params')).delete().eq('key', pp.key); if (error) throw error; showToast('已删除'); await loadPipelineParams() } catch (e: any) { showToast(e.message) }
 }
 
 function createDM() { dmModal.isNew = true; dmModal.form = { id: null, content_type: '', metrics: [] }; dmModal.metricsJson = '[\n  { "label": "", "key": "", "format": "number" }\n]'; dmModal.jsonError = ''; dmModal.show = true }
@@ -59,14 +61,14 @@ async function saveDM() {
   let metrics; try { metrics = JSON.parse(dmModal.metricsJson); dmModal.jsonError = '' } catch (e: any) { dmModal.jsonError = 'JSON 格式错误: ' + e.message; return }
   const payload = { content_type: dmModal.form.content_type, metrics }
   try {
-    if (dmModal.isNew) { const { error } = await supabase.value.from('display_metrics_configs').insert([payload]); if (error) throw error; showToast('已创建') }
-    else { const { error } = await supabase.value.from('display_metrics_configs').update(payload).eq('id', dmModal.form.id); if (error) throw error; showToast('已更新') }
+    if (dmModal.isNew) { const { error } = await supabase.value.from(tableName('display_metrics_configs')).insert([payload]); if (error) throw error; showToast('已创建') }
+    else { const { error } = await supabase.value.from(tableName('display_metrics_configs')).update(payload).eq('id', dmModal.form.id); if (error) throw error; showToast('已更新') }
     dmModal.show = false; await loadDisplayMetrics()
   } catch (e: any) { showToast(e.message) }
 }
 async function deleteDM(dm: any) {
   if (!confirm(`确定要删除 "${dm.content_type}" 的展示指标吗？`)) return
-  try { const { error } = await supabase.value.from('display_metrics_configs').delete().eq('id', dm.id); if (error) throw error; showToast('已删除'); await loadDisplayMetrics() } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('display_metrics_configs')).delete().eq('id', dm.id); if (error) throw error; showToast('已删除'); await loadDisplayMetrics() } catch (e: any) { showToast(e.message) }
 }
 
 function createFR() { frModal.isNew = true; frModal.form = { id: null, rule_type: 'skip_domain', value: '', enabled: true }; frModal.show = true }
@@ -74,17 +76,17 @@ function editFR(fr: any) { frModal.isNew = false; frModal.form = { ...fr }; frMo
 async function saveFR() {
   const f = frModal.form; const payload = { rule_type: f.rule_type, value: f.value, enabled: f.enabled }
   try {
-    if (frModal.isNew) { const { error } = await supabase.value.from('content_fetch_rules').insert([payload]); if (error) throw error; showToast('规则已创建') }
-    else { const { error } = await supabase.value.from('content_fetch_rules').update(payload).eq('id', f.id); if (error) throw error; showToast('规则已更新') }
+    if (frModal.isNew) { const { error } = await supabase.value.from(tableName('content_fetch_rules')).insert([payload]); if (error) throw error; showToast('规则已创建') }
+    else { const { error } = await supabase.value.from(tableName('content_fetch_rules')).update(payload).eq('id', f.id); if (error) throw error; showToast('规则已更新') }
     frModal.show = false; await loadFetchRules()
   } catch (e: any) { showToast(e.message) }
 }
 async function toggleFREnabled(fr: any) {
-  try { const { error } = await supabase.value.from('content_fetch_rules').update({ enabled: !fr.enabled }).eq('id', fr.id); if (error) throw error; fr.enabled = !fr.enabled } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('content_fetch_rules')).update({ enabled: !fr.enabled }).eq('id', fr.id); if (error) throw error; fr.enabled = !fr.enabled } catch (e: any) { showToast(e.message) }
 }
 async function deleteFR(fr: any) {
   if (!confirm(`确定要删除规则 "${fr.value}" 吗？`)) return
-  try { const { error } = await supabase.value.from('content_fetch_rules').delete().eq('id', fr.id); if (error) throw error; showToast('已删除'); await loadFetchRules() } catch (e: any) { showToast(e.message) }
+  try { const { error } = await supabase.value.from(tableName('content_fetch_rules')).delete().eq('id', fr.id); if (error) throw error; showToast('已删除'); await loadFetchRules() } catch (e: any) { showToast(e.message) }
 }
 
 async function loadItems() { await Promise.all([loadPipelineParams(), loadDisplayMetrics(), loadFetchRules()]) }

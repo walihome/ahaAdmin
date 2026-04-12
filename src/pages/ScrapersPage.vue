@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ModalWrapper from '@/components/ModalWrapper.vue'
 
 const { supabase } = useSupabase()
+const { tableName } = useSettings()
 const { showToast } = useToast()
 
 const scraperConfigs = ref<any[]>([])
@@ -32,7 +34,7 @@ const scraperConfigHints: Record<string, string> = {
 async function loadItems() {
   loading.value = true
   try {
-    const { data, error } = await supabase.value.from('scraper_configs').select('*').order('priority', { ascending: true })
+    const { data, error } = await supabase.value.from(tableName('scraper_configs')).select('*').order('priority', { ascending: true })
     if (error) throw error
     scraperConfigs.value = data || []
   } catch (e: any) { showToast(e.message) }
@@ -59,15 +61,15 @@ async function save() {
   catch (e: any) { modal.configError = 'JSON 格式错误: ' + e.message; return }
   const payload = { name: modal.form.name, scraper_type: modal.form.scraper_type, enabled: modal.form.enabled, priority: modal.form.priority, config }
   try {
-    if (modal.isNew) { const { error } = await supabase.value.from('scraper_configs').insert([payload]); if (error) throw error; showToast('数据源已创建') }
-    else { const { error } = await supabase.value.from('scraper_configs').update(payload).eq('id', modal.form.id); if (error) throw error; showToast('数据源已更新') }
+    if (modal.isNew) { const { error } = await supabase.value.from(tableName('scraper_configs')).insert([payload]); if (error) throw error; showToast('数据源已创建') }
+    else { const { error } = await supabase.value.from(tableName('scraper_configs')).update(payload).eq('id', modal.form.id); if (error) throw error; showToast('数据源已更新') }
     modal.show = false; await loadItems()
   } catch (e: any) { showToast(e.message) }
 }
 
 async function toggleEnabled(sc: any) {
   try {
-    const { error } = await supabase.value.from('scraper_configs').update({ enabled: !sc.enabled }).eq('id', sc.id)
+    const { error } = await supabase.value.from(tableName('scraper_configs')).update({ enabled: !sc.enabled }).eq('id', sc.id)
     if (error) throw error; sc.enabled = !sc.enabled
   } catch (e: any) { showToast(e.message) }
 }
@@ -75,7 +77,7 @@ async function toggleEnabled(sc: any) {
 async function confirmDelete(sc: any) {
   if (!confirm(`确定要删除数据源 "${sc.name}" 吗？`)) return
   try {
-    const { error } = await supabase.value.from('scraper_configs').delete().eq('id', sc.id)
+    const { error } = await supabase.value.from(tableName('scraper_configs')).delete().eq('id', sc.id)
     if (error) throw error; showToast('已删除'); await loadItems()
   } catch (e: any) { showToast(e.message) }
 }
