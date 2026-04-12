@@ -19,5 +19,5 @@
   --red-glow: rgba(232, 88, 88, 0.12);
   --blue: #4ea8e8;
   --mono: 'DM Mono', monospace;
-  --sans: 'Syne', sans-serif;
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
