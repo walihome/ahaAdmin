@@ -254,38 +254,39 @@ onMounted(loadItems)
       </div>
     </div>
 
-    <ModalWrapper :show="modal.show" width="640px" @close="modal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ modal.isNew ? '新增数据源' : '编辑数据源' }}</h2>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">名称 *</label>
-          <input v-model="modal.form.name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none" placeholder="如 GitHub Trending">
+    <ModalWrapper :show="modal.show" width="580px" @close="modal.show = false">
+      <div class="modal-title">{{ modal.isNew ? '新增数据源' : '编辑数据源' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">名称</label>
+          <input v-model="modal.form.name" type="text" class="form-input" placeholder="如 GitHub Trending">
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">引擎类型 *</label>
-            <select v-model="modal.form.scraper_type" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">引擎类型</label>
+            <select v-model="modal.form.scraper_type" class="form-select">
               <option value="">选择引擎类型</option>
               <option v-for="t in scraperTypeOptions" :key="t" :value="t">{{ t }}</option>
             </select>
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">优先级 *</label>
-            <input v-model.number="modal.form.priority" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+          <div class="form-group">
+            <label class="form-label">优先级</label>
+            <input v-model.number="modal.form.priority" type="number" class="form-input">
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+        <div class="form-toggle-row">
+          <span class="form-toggle-label">启用</span>
           <ToggleSwitch v-model="modal.form.enabled" />
         </div>
-        <div>
-          <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Config (JSON) *</label>
-          <div v-if="modal.form.scraper_type" class="text-[10px] text-text-dim mb-2 font-mono">Schema: {{ scraperConfigHints[modal.form.scraper_type] || '{}' }}</div>
-          <textarea v-model="modal.configJson" rows="12" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y"></textarea>
-          <div v-if="modal.configError" class="text-red text-xs mt-1">{{ modal.configError }}</div>
+        <div class="modal-divider"></div>
+        <div class="form-group">
+          <label class="form-label">Config (JSON)</label>
+          <div v-if="modal.form.scraper_type" class="form-hint">Schema: {{ scraperConfigHints[modal.form.scraper_type] || '{}' }}</div>
+          <textarea v-model="modal.configJson" rows="12" class="form-textarea"></textarea>
+          <div v-if="modal.configError" class="form-error">{{ modal.configError }}</div>
         </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3">
+      <div class="modal-footer">
         <button @click="modal.show = false" class="btn-secondary">取消</button>
         <button @click="save" class="btn-primary">{{ modal.isNew ? '创建' : '保存' }}</button>
       </div>

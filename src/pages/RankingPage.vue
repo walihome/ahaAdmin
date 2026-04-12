@@ -260,37 +260,80 @@ onMounted(loadItems)
     </div>
 
     <!-- Rank Group Modal -->
-    <ModalWrapper :show="rgModal.show" width="540px" @close="rgModal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ rgModal.isNew ? '新增分组' : '编辑分组' }}</h2>
-      <div class="space-y-4">
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">分组名称 *</label><input v-model="rgModal.form.group_name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div>
-          <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Source Names</label>
-          <div class="flex flex-wrap gap-2 mb-2"><span v-for="sn in rgModal.form.source_names" :key="sn" class="card-tag tag-done flex items-center gap-1">{{ sn }} <span @click="removeSourceName(sn)" class="cursor-pointer text-red ml-1">&times;</span></span></div>
-          <select @change="addSourceName($event)" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"><option value="">添加来源...</option><option v-for="sn in availableSourceNames" :key="sn" :value="sn">{{ sn }}</option></select>
+    <ModalWrapper :show="rgModal.show" width="520px" @close="rgModal.show = false">
+      <div class="modal-title">{{ rgModal.isNew ? '新增分组' : '编辑分组' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">分组名称</label>
+          <input v-model="rgModal.form.group_name" type="text" class="form-input" placeholder="如 官方动态">
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">上限 *</label><input v-model.number="rgModal.form.limit" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">排列顺序 *</label><input v-model.number="rgModal.form.sort_order" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
+        <div class="form-group">
+          <label class="form-label">数据来源</label>
+          <div v-if="rgModal.form.source_names.length" class="form-chip-list" style="margin-bottom:8px">
+            <span v-for="sn in rgModal.form.source_names" :key="sn" class="form-chip">
+              {{ sn }}
+              <span class="form-chip-remove" @click="removeSourceName(sn)">&times;</span>
+            </span>
+          </div>
+          <select @change="addSourceName($event)" class="form-select">
+            <option value="">添加来源...</option>
+            <option v-for="sn in availableSourceNames" :key="sn" :value="sn">{{ sn }}</option>
+          </select>
         </div>
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">必须展示</label><ToggleSwitch v-model="rgModal.form.must_include" /></div>
-          <div class="flex items-center gap-2"><label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label><ToggleSwitch v-model="rgModal.form.enabled" /></div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">上限</label>
+            <input v-model.number="rgModal.form.limit" type="number" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">排列顺序</label>
+            <input v-model.number="rgModal.form.sort_order" type="number" class="form-input">
+          </div>
+        </div>
+        <div class="form-toggle-row" style="gap:20px">
+          <div class="form-toggle-row">
+            <span class="form-toggle-label">必须展示</span>
+            <ToggleSwitch v-model="rgModal.form.must_include" />
+          </div>
+          <div class="form-toggle-row">
+            <span class="form-toggle-label">启用</span>
+            <ToggleSwitch v-model="rgModal.form.enabled" />
+          </div>
         </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3"><button @click="rgModal.show = false" class="btn-secondary">取消</button><button @click="saveRG" class="btn-primary">{{ rgModal.isNew ? '创建' : '保存' }}</button></div>
+      <div class="modal-footer">
+        <button @click="rgModal.show = false" class="btn-secondary">取消</button>
+        <button @click="saveRG" class="btn-primary">{{ rgModal.isNew ? '创建' : '保存' }}</button>
+      </div>
     </ModalWrapper>
 
     <!-- Tag Slot Modal -->
-    <ModalWrapper :show="tsModal.show" width="440px" @close="tsModal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ tsModal.isNew ? '新增标签' : '编辑标签' }}</h2>
-      <div class="space-y-4">
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">标签名 *</label><input v-model="tsModal.form.tag_name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">每日上限 *</label><input v-model.number="tsModal.form.max_slots" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">最低分数 *</label><input v-model.number="tsModal.form.min_score" type="number" step="0.1" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div class="flex items-center gap-3"><label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label><ToggleSwitch v-model="tsModal.form.enabled" /></div>
+    <ModalWrapper :show="tsModal.show" width="420px" @close="tsModal.show = false">
+      <div class="modal-title">{{ tsModal.isNew ? '新增标签' : '编辑标签' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">标签名</label>
+          <input v-model="tsModal.form.tag_name" type="text" class="form-input" placeholder="如 AI">
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">每日上限</label>
+            <input v-model.number="tsModal.form.max_slots" type="number" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">最低分数</label>
+            <input v-model.number="tsModal.form.min_score" type="number" step="0.1" class="form-input">
+          </div>
+        </div>
+        <div class="form-toggle-row">
+          <span class="form-toggle-label">启用</span>
+          <ToggleSwitch v-model="tsModal.form.enabled" />
+        </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3"><button @click="tsModal.show = false" class="btn-secondary">取消</button><button @click="saveTS" class="btn-primary">{{ tsModal.isNew ? '创建' : '保存' }}</button></div>
+      <div class="modal-footer">
+        <button @click="tsModal.show = false" class="btn-secondary">取消</button>
+        <button @click="saveTS" class="btn-primary">{{ tsModal.isNew ? '创建' : '保存' }}</button>
+      </div>
     </ModalWrapper>
   </div>
 </template>

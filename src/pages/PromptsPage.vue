@@ -210,27 +210,62 @@ onMounted(loadItems)
       </EmptyState>
     </div>
 
-    <ModalWrapper :show="modal.show" width="700px" @close="modal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ modal.isNew ? '新建 Prompt' : '编辑 Prompt' }}</h2>
-      <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">名称 *</label><input v-model="modal.form.name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">阶段 *</label><select v-model="modal.form.stage" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"><option value="process">process</option><option value="rank">rank</option><option value="archive">archive</option></select></div>
+    <ModalWrapper :show="modal.show" width="640px" @close="modal.show = false">
+      <div class="modal-title">{{ modal.isNew ? '新建 Prompt' : '编辑 Prompt' }}</div>
+      <div class="modal-form">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">名称</label>
+            <input v-model="modal.form.name" type="text" class="form-input" placeholder="Prompt 名称">
+          </div>
+          <div class="form-group">
+            <label class="form-label">阶段</label>
+            <select v-model="modal.form.stage" class="form-select">
+              <option value="process">process</option>
+              <option value="rank">rank</option>
+              <option value="archive">archive</option>
+            </select>
+          </div>
         </div>
-        <div class="grid grid-cols-3 gap-4">
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">模型 *</label><input v-model="modal.form.model" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Temperature *</label><input v-model.number="modal.form.temperature" type="number" step="0.1" min="0" max="2" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">版本 *</label><input v-model.number="modal.form.version" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label class="form-label">模型</label>
+            <input v-model="modal.form.model" type="text" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Temperature</label>
+            <input v-model.number="modal.form.temperature" type="number" step="0.1" min="0" max="2" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">版本</label>
+            <input v-model.number="modal.form.version" type="number" class="form-input">
+          </div>
         </div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Model Base URL *</label><input v-model="modal.form.model_base_url" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div class="grid grid-cols-2 gap-4">
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Max Retries</label><input v-model.number="modal.form.max_retries" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-          <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Request Interval (s)</label><input v-model.number="modal.form.request_interval" type="number" step="0.1" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
+        <div class="form-group">
+          <label class="form-label">Model Base URL</label>
+          <input v-model="modal.form.model_base_url" type="text" class="form-input" style="font-family:var(--mono); font-size:12px">
         </div>
-        <div class="flex items-center gap-3"><label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label><ToggleSwitch v-model="modal.form.enabled" /></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Template (Prompt 文本) *</label><textarea v-model="modal.form.template" rows="16" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y leading-relaxed"></textarea></div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">Max Retries</label>
+            <input v-model.number="modal.form.max_retries" type="number" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Request Interval (s)</label>
+            <input v-model.number="modal.form.request_interval" type="number" step="0.1" class="form-input">
+          </div>
+        </div>
+        <div class="form-toggle-row">
+          <span class="form-toggle-label">启用</span>
+          <ToggleSwitch v-model="modal.form.enabled" />
+        </div>
+        <div class="modal-divider"></div>
+        <div class="form-group">
+          <label class="form-label">Prompt 模板文本</label>
+          <textarea v-model="modal.form.template" rows="16" class="form-textarea" style="line-height:1.8"></textarea>
+        </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3">
+      <div class="modal-footer">
         <button @click="modal.show = false" class="btn-secondary">取消</button>
         <button @click="save" class="btn-primary">{{ modal.isNew ? '创建' : '保存' }}</button>
       </div>

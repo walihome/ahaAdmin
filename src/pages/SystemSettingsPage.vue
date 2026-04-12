@@ -266,34 +266,71 @@ onMounted(loadItems)
 
     <!-- Pipeline Param Modal -->
     <ModalWrapper :show="ppModal.show" width="440px" @close="ppModal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ ppModal.isNew ? '新增参数' : '编辑参数' }}</h2>
-      <div class="space-y-4">
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Key *</label><input v-model="ppModal.form.key" type="text" :disabled="!ppModal.isNew" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none disabled:opacity-50"></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Value (JSON) *</label><input v-model="ppModal.valueStr" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm font-mono text-text focus:border-accent outline-none"></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Description</label><input v-model="ppModal.form.description" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
+      <div class="modal-title">{{ ppModal.isNew ? '新增参数' : '编辑参数' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Key</label>
+          <input v-model="ppModal.form.key" type="text" :disabled="!ppModal.isNew" class="form-input" style="font-family:var(--mono)" placeholder="参数键名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value (JSON)</label>
+          <input v-model="ppModal.valueStr" type="text" class="form-input" style="font-family:var(--mono)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <input v-model="ppModal.form.description" type="text" class="form-input" placeholder="可选的说明文字">
+        </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3"><button @click="ppModal.show = false" class="btn-secondary">取消</button><button @click="savePP" class="btn-primary">{{ ppModal.isNew ? '创建' : '保存' }}</button></div>
+      <div class="modal-footer">
+        <button @click="ppModal.show = false" class="btn-secondary">取消</button>
+        <button @click="savePP" class="btn-primary">{{ ppModal.isNew ? '创建' : '保存' }}</button>
+      </div>
     </ModalWrapper>
 
     <!-- Display Metric Modal -->
-    <ModalWrapper :show="dmModal.show" width="540px" @close="dmModal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ dmModal.isNew ? '新增展示指标' : '编辑展示指标' }}</h2>
-      <div class="space-y-4">
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Content Type *</label><input v-model="dmModal.form.content_type" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Metrics (JSON Array) *</label><textarea v-model="dmModal.metricsJson" rows="8" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y"></textarea><div v-if="dmModal.jsonError" class="text-red text-xs mt-1">{{ dmModal.jsonError }}</div></div>
+    <ModalWrapper :show="dmModal.show" width="520px" @close="dmModal.show = false">
+      <div class="modal-title">{{ dmModal.isNew ? '新增展示指标' : '编辑展示指标' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Content Type</label>
+          <input v-model="dmModal.form.content_type" type="text" class="form-input" placeholder="如 article">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Metrics (JSON Array)</label>
+          <textarea v-model="dmModal.metricsJson" rows="8" class="form-textarea"></textarea>
+          <div v-if="dmModal.jsonError" class="form-error">{{ dmModal.jsonError }}</div>
+        </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3"><button @click="dmModal.show = false" class="btn-secondary">取消</button><button @click="saveDM" class="btn-primary">{{ dmModal.isNew ? '创建' : '保存' }}</button></div>
+      <div class="modal-footer">
+        <button @click="dmModal.show = false" class="btn-secondary">取消</button>
+        <button @click="saveDM" class="btn-primary">{{ dmModal.isNew ? '创建' : '保存' }}</button>
+      </div>
     </ModalWrapper>
 
     <!-- Fetch Rule Modal -->
-    <ModalWrapper :show="frModal.show" width="440px" @close="frModal.show = false">
-      <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ frModal.isNew ? '新增规则' : '编辑规则' }}</h2>
-      <div class="space-y-4">
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">规则类型 *</label><select v-model="frModal.form.rule_type" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"><option value="skip_domain">skip_domain</option><option value="fetch_fulltext_tag">fetch_fulltext_tag</option></select></div>
-        <div><label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">值 *</label><input v-model="frModal.form.value" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none"></div>
-        <div class="flex items-center gap-3"><label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label><ToggleSwitch v-model="frModal.form.enabled" /></div>
+    <ModalWrapper :show="frModal.show" width="420px" @close="frModal.show = false">
+      <div class="modal-title">{{ frModal.isNew ? '新增规则' : '编辑规则' }}</div>
+      <div class="modal-form">
+        <div class="form-group">
+          <label class="form-label">规则类型</label>
+          <select v-model="frModal.form.rule_type" class="form-select">
+            <option value="skip_domain">skip_domain</option>
+            <option value="fetch_fulltext_tag">fetch_fulltext_tag</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">值</label>
+          <input v-model="frModal.form.value" type="text" class="form-input" placeholder="如 example.com">
+        </div>
+        <div class="form-toggle-row">
+          <span class="form-toggle-label">启用</span>
+          <ToggleSwitch v-model="frModal.form.enabled" />
+        </div>
       </div>
-      <div class="mt-6 flex justify-end gap-3"><button @click="frModal.show = false" class="btn-secondary">取消</button><button @click="saveFR" class="btn-primary">{{ frModal.isNew ? '创建' : '保存' }}</button></div>
+      <div class="modal-footer">
+        <button @click="frModal.show = false" class="btn-secondary">取消</button>
+        <button @click="saveFR" class="btn-primary">{{ frModal.isNew ? '创建' : '保存' }}</button>
+      </div>
     </ModalWrapper>
   </div>
 </template>
