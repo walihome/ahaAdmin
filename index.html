@@ -2324,10 +2324,11 @@
 
     const ALLOWED_USERS = [];
 
-    // Pre-check: if URL hash has an expired token, strip it before Supabase client init
+    // Pre-check: clean up stale auth state before Supabase client init
     (function() {
+      // 1. Strip expired access_token from URL hash
       const hash = window.location.hash;
-      if (hash && hash.includes('access_token=') && hash.includes('expires_at=')) {
+      if (hash && hash.includes('access_token=')) {
         try {
           const params = new URLSearchParams(hash.substring(1));
           const expiresAt = parseInt(params.get('expires_at'), 10);
@@ -2336,6 +2337,19 @@
           }
         } catch (_) {}
       }
+
+      // 2. Check if stored session is expired, if so purge it
+      const storageKey = 'sb-wyhpcfjtmtitorinkevj-auth-token';
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const stored = JSON.parse(raw);
+          const expiresAt = stored?.expires_at || stored?.currentSession?.expires_at;
+          if (expiresAt && Date.now() / 1000 > expiresAt) {
+            Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+          }
+        }
+      } catch (_) {}
     })();
 
     createApp({
