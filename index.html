@@ -2324,6 +2324,20 @@
 
     const ALLOWED_USERS = [];
 
+    // Pre-check: if URL hash has an expired token, strip it before Supabase client init
+    (function() {
+      const hash = window.location.hash;
+      if (hash && hash.includes('access_token=') && hash.includes('expires_at=')) {
+        try {
+          const params = new URLSearchParams(hash.substring(1));
+          const expiresAt = parseInt(params.get('expires_at'), 10);
+          if (expiresAt && Date.now() / 1000 > expiresAt) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        } catch (_) {}
+      }
+    })();
+
     createApp({
       setup() {
         const currentTab = ref('raw');
