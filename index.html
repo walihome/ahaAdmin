@@ -763,13 +763,42 @@
       </div>
 
       <div class="nav-section">
-        <div class="nav-label">配置</div>
+        <div class="nav-label">配置管理</div>
+        <a :class="['nav-item', currentTab === 'scrapers' ? 'active' : '']" @click="currentTab = 'scrapers'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
+          </div>
+          数据源管理
+          <span class="nav-badge" v-if="scraperConfigs.length">{{ scraperConfigs.length }}</span>
+        </a>
         <a :class="['nav-item', currentTab === 'prompts' ? 'active' : '']" @click="currentTab = 'prompts'">
           <div class="nav-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </div>
-          提示词管理
-          <span class="nav-badge">{{ prompts.length }}</span>
+          Prompt 管理
+          <span class="nav-badge" v-if="promptTemplates.length">{{ promptTemplates.length }}</span>
+        </a>
+        <a :class="['nav-item', currentTab === 'ranking' ? 'active' : '']" @click="currentTab = 'ranking'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          </div>
+          排序规则
+        </a>
+        <a :class="['nav-item', currentTab === 'cfgsettings' ? 'active' : '']" @click="currentTab = 'cfgsettings'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          系统设置
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">执行监控</div>
+        <a :class="['nav-item', currentTab === 'runs' ? 'active' : '']" @click="currentTab = 'runs'">
+          <div class="nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          Pipeline 运行
         </a>
       </div>
 
@@ -1294,13 +1323,111 @@
         </div>
       </div>
 
-      <!-- PAGE: 提示词管理 -->
+      <!-- PAGE: 数据源管理 (scraper_configs) -->
+      <div class="page active" v-if="currentTab === 'scrapers'">
+        <div class="flex flex-col h-full w-full bg-dark-bg overflow-hidden">
+          <div class="flex items-center justify-between px-7 py-5 border-b border-border bg-surface">
+            <div>
+              <h2 class="text-xl font-extrabold text-text tracking-tight">数据源管理</h2>
+              <p class="text-xs text-text-dim mt-1 font-mono">Scraper Configs — 每行代表一个抓取引擎+参数组合</p>
+            </div>
+            <button class="btn-new" @click="createScraperConfig">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              新增数据源
+            </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-6">
+            <div v-if="loading.scrapers" class="flex items-center justify-center py-20 text-text-muted">加载中...</div>
+            <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+              <thead>
+                <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                  <th class="px-4 pb-2">名称</th>
+                  <th class="px-4 pb-2">引擎类型</th>
+                  <th class="px-4 pb-2">启用</th>
+                  <th class="px-4 pb-2">优先级</th>
+                  <th class="px-4 pb-2">更新时间</th>
+                  <th class="px-4 pb-2">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="sc in scraperConfigs" :key="sc.id" class="bg-surface border border-border rounded-xl">
+                  <td class="px-4 py-3 font-semibold text-text">{{ sc.name }}</td>
+                  <td class="px-4 py-3"><span class="card-tag tag-done">{{ sc.scraper_type }}</span></td>
+                  <td class="px-4 py-3">
+                    <div @click="toggleScraperEnabled(sc)" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: sc.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                      <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: sc.enabled ? '18px' : '2px' }"></div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 font-mono text-text-muted">{{ sc.priority }}</td>
+                  <td class="px-4 py-3 font-mono text-text-dim text-xs">{{ sc.updated_at ? new Date(sc.updated_at).toLocaleString() : '-' }}</td>
+                  <td class="px-4 py-3">
+                    <div class="flex gap-2">
+                      <button class="btn-secondary text-xs py-1 px-3" @click="editScraperConfig(sc)">编辑</button>
+                      <button class="btn-danger text-xs py-1 px-3" @click="confirmDeleteScraper(sc)">删除</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-if="!loading.scrapers && scraperConfigs.length === 0" class="flex flex-col items-center justify-center py-20 text-text-dim">
+              <div class="text-sm font-bold">暂无数据源配置</div>
+              <div class="text-xs mt-1 opacity-50">点击"新增数据源"开始</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scraper Edit Modal -->
+        <div v-if="scraperModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="scraperModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[640px] max-h-[85vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ scraperModal.isNew ? '新增数据源' : '编辑数据源' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">名称 *</label>
+                <input v-model="scraperModal.form.name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none" placeholder="如 GitHub Trending">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">引擎类型 *</label>
+                  <select v-model="scraperModal.form.scraper_type" @change="onScraperTypeChange" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                    <option value="">选择引擎类型</option>
+                    <option v-for="t in scraperTypeOptions" :key="t" :value="t">{{ t }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">优先级 *</label>
+                  <input v-model.number="scraperModal.form.priority" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none" placeholder="越小越先执行">
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+                <div @click="scraperModal.form.enabled = !scraperModal.form.enabled" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: scraperModal.form.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                  <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: scraperModal.form.enabled ? '18px' : '2px' }"></div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Config (JSON) *</label>
+                <div v-if="scraperModal.form.scraper_type" class="text-[10px] text-text-dim mb-2 font-mono">
+                  Schema: {{ getScraperConfigHint(scraperModal.form.scraper_type) }}
+                </div>
+                <textarea v-model="scraperModal.configJson" rows="12" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y" placeholder='{ "source_type": "REPO", "content_type": "repo", ... }'></textarea>
+                <div v-if="scraperModal.configError" class="text-red text-xs mt-1">{{ scraperModal.configError }}</div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="scraperModal.show = false" class="btn-secondary">取消</button>
+              <button @click="saveScraperConfig" class="btn-primary">{{ scraperModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: Prompt 管理 (prompt_templates) -->
       <div class="page active" v-if="currentTab === 'prompts'">
         <div class="two-pane">
           <div class="list-pane">
             <div class="list-pane-header">
-              <div class="list-pane-title">提示词库</div>
-              <button class="btn-new" @click="createNewPrompt">
+              <div class="list-pane-title">Prompt 模板</div>
+              <button class="btn-new" @click="createPromptTemplate">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 新建
               </button>
@@ -1308,95 +1435,668 @@
             <div class="list-search">
               <div class="search-wrap">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input v-model="promptSearch" class="search-input" type="text" placeholder="搜索提示词...">
+                <input v-model="promptTemplateSearch" class="search-input" type="text" placeholder="搜索 Prompt...">
+              </div>
+            </div>
+            <!-- Stage filter tabs -->
+            <div class="flex gap-1 px-3 py-2 border-b border-border">
+              <div v-for="s in ['all','process','rank','archive']" :key="s" :class="['tab', promptTemplateStageFilter === s ? 'active' : '']" @click="promptTemplateStageFilter = s" style="padding:4px 10px; font-size:11px;">
+                {{ s === 'all' ? '全部' : s }}
               </div>
             </div>
             <div class="item-list">
-              <div v-for="p in filteredPrompts" :key="p.id" 
-                   @click="selectPrompt(p)"
-                   :class="['prompt-card', selectedPrompt?.id === p.id ? 'active' : '']">
+              <div v-for="pt in filteredPromptTemplates" :key="pt.id" 
+                   @click="selectPromptTemplate(pt)"
+                   :class="['prompt-card', selectedPromptTemplate?.id === pt.id ? 'active' : '']">
                 <div class="card-top">
-                  <div class="card-title">{{ p.name }}</div>
-                  <span class="version-tag">v{{ p.version }}</span>
+                  <div class="card-title">{{ pt.name }}</div>
+                  <span class="card-tag" :class="pt.enabled ? 'tag-done' : 'tag-pending'">{{ pt.stage }}</span>
                 </div>
-                <div class="card-preview">{{ p.content }}</div>
+                <div class="card-preview">{{ pt.template }}</div>
                 <div class="card-meta">
-                  <div v-if="p.is_active" class="meta-pill"><div class="dot-live"></div><span class="live-label">生产中</span></div>
-                  <div class="meta-pill">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    {{ new Date(p.updated_at).toLocaleDateString() }}
-                  </div>
+                  <div class="meta-pill">v{{ pt.version }}</div>
+                  <div class="meta-pill">{{ pt.model }}</div>
+                  <div v-if="pt.enabled" class="meta-pill"><div class="dot-live"></div>启用</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- PROMPT EDITOR -->
-          <div class="detail-pane" v-if="selectedPrompt">
+          <div class="detail-pane" v-if="selectedPromptTemplate">
             <div class="detail-topbar">
-              <div class="mini-stat">字符数 <span class="mini-stat-val">{{ selectedPrompt.content?.length || 0 }}</span></div>
+              <div class="mini-stat">阶段 <span class="mini-stat-val">{{ selectedPromptTemplate.stage }}</span></div>
               <div class="divider-v"></div>
-              <div class="mini-stat">预估 Token <span class="mini-stat-val">{{ Math.ceil((selectedPrompt.content?.length || 0) / 2) }}</span></div>
+              <div class="mini-stat">模型 <span class="mini-stat-val">{{ selectedPromptTemplate.model }}</span></div>
               <div class="divider-v"></div>
-              <div class="mini-stat">版本 <span class="mini-stat-val">v{{ selectedPrompt.version }}</span></div>
+              <div class="mini-stat">温度 <span class="mini-stat-val">{{ selectedPromptTemplate.temperature }}</span></div>
+              <div class="divider-v"></div>
+              <div class="mini-stat">版本 <span class="mini-stat-val">v{{ selectedPromptTemplate.version }}</span></div>
             </div>
             <div class="detail-header">
               <div class="detail-title-row">
-                <input v-model="selectedPrompt.name" class="bg-transparent border-none outline-none text-xl font-extrabold text-text focus:ring-0 p-0">
-                <div v-if="selectedPrompt.is_active" class="status-badge"><div class="dot-live"></div> 生产中</div>
+                <div class="detail-title">{{ selectedPromptTemplate.name }}</div>
+                <div v-if="selectedPromptTemplate.enabled" class="status-badge"><div class="dot-live"></div> 启用中</div>
               </div>
               <div class="detail-actions">
-                <button v-if="selectedPrompt.id" @click="confirmDeletePrompt" class="btn-secondary text-red hover:border-red/50">删除版本</button>
-                <button @click="savePromptAsNew" class="btn-secondary">保存新版本</button>
-                <button @click="setActivePrompt" v-if="!selectedPrompt.is_active && selectedPrompt.id" class="btn-primary">设为生效</button>
+                <button @click="editPromptTemplate(selectedPromptTemplate)" class="btn-secondary">编辑</button>
+                <button v-if="selectedPromptTemplate.id" @click="confirmDeletePromptTemplate" class="btn-danger">删除</button>
               </div>
             </div>
-            <div class="detail-body flex-1 overflow-hidden flex flex-col" style="padding:0;">
-              <div class="editor-tabs px-7 pt-4">
-                <div :class="['tab', promptTab === 'editor' ? 'active' : '']" @click="promptTab = 'editor'">编辑器</div>
-                <div :class="['tab', promptTab === 'preview' ? 'active' : '']" @click="promptTab = 'preview'">预览</div>
-                <div :class="['tab', promptTab === 'variables' ? 'active' : '']" @click="promptTab = 'variables'">变量</div>
-              </div>
-              <div class="textarea-wrap flex-1 min-h-0 relative flex flex-col" v-show="promptTab === 'editor'">
-                <textarea id="prompt-editor" style="background: var(--bg); color: var(--text); border: none; outline: none; resize: none; width: 100%; height: 100%; padding: 20px;"></textarea>
-              </div>
-              <div class="flex-1 overflow-y-auto p-7 text-text-muted leading-relaxed" v-show="promptTab === 'preview'">
-                <div class="whitespace-pre-wrap font-mono text-[13px]">{{ selectedPrompt.content || '暂无内容' }}</div>
-              </div>
-              <div class="flex-1 overflow-y-auto p-7 text-text-muted" v-show="promptTab === 'variables'">
-                <div class="text-xs mb-4">在提示词中使用 <code class="bg-surface2 px-1 py-0.5 rounded text-accent" v-pre>{{变量名}}</code> 格式定义变量。</div>
-                <div v-if="promptVariables.length > 0" class="flex flex-col gap-3">
-                  <div v-for="v in promptVariables" :key="v" class="flex items-center gap-3 bg-surface border border-border p-3 rounded-lg">
-                    <div class="font-mono text-accent text-xs font-bold w-32 shrink-0">{{ v }}</div>
-                    <input type="text" class="flex-1 bg-surface2 border border-border rounded-md px-3 py-1.5 text-xs text-text focus:border-accent outline-none" placeholder="测试值...">
-                  </div>
+            <div class="detail-body">
+              <div class="content-block">
+                <div class="block-label">模板参数</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div class="flex flex-col"><span class="text-[10px] text-text-dim uppercase tracking-wider">Model</span><span class="text-sm font-bold text-text">{{ selectedPromptTemplate.model }}</span></div>
+                  <div class="flex flex-col"><span class="text-[10px] text-text-dim uppercase tracking-wider">Base URL</span><span class="text-xs font-mono text-text-muted truncate">{{ selectedPromptTemplate.model_base_url }}</span></div>
+                  <div class="flex flex-col"><span class="text-[10px] text-text-dim uppercase tracking-wider">Temperature</span><span class="text-sm font-bold text-text">{{ selectedPromptTemplate.temperature }}</span></div>
+                  <div class="flex flex-col"><span class="text-[10px] text-text-dim uppercase tracking-wider">Max Retries</span><span class="text-sm font-bold text-text">{{ selectedPromptTemplate.max_retries }}</span></div>
                 </div>
-                <div v-else class="text-center py-10 opacity-50 text-xs">未检测到变量</div>
               </div>
-            </div>
-            <div class="detail-footer">
-              <div class="stats">
-                <div class="stat">字符 <span class="stat-val">{{ selectedPrompt.content?.length || 0 }}</span></div>
-                <div class="stat">Token <span class="stat-val">~{{ Math.ceil((selectedPrompt.content?.length || 0) / 2) }}</span></div>
+              <div class="content-block">
+                <div class="block-label">Prompt 模板内容</div>
+                <div class="whitespace-pre-wrap font-mono text-[12px] text-text-muted leading-relaxed bg-bg p-5 rounded-lg border border-border max-h-[60vh] overflow-y-auto">{{ selectedPromptTemplate.template }}</div>
               </div>
-              <div style="font-family:var(--mono); font-size:10px; color:var(--text-dim);">Auto-saved · UTF-8</div>
             </div>
           </div>
+          <div v-else class="flex-1 flex flex-col items-center justify-center text-text-dim bg-dark-bg">
+            <div class="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-4 text-text-muted">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </div>
+            <div class="text-sm font-bold tracking-tight">选择一条 Prompt 模板</div>
+          </div>
+        </div>
 
-          <!-- VERSION HISTORY -->
-          <div class="history-panel" v-if="selectedPrompt">
-            <div class="history-header">版本历史</div>
-            <div class="history-list">
-              <div v-for="h in promptHistory" :key="h.id" 
-                   @click="selectPrompt(h)"
-                   class="history-item">
-                <div :class="['history-dot', h.id === selectedPrompt.id ? 'current' : 'prev']"></div>
-                <div class="history-info">
-                  <div class="history-ver">{{ h.id === selectedPrompt.id ? 'v' + h.version + ' — 当前' : 'v' + h.version }}</div>
-                  <div class="history-desc">{{ h.content }}</div>
-                  <div class="history-time">{{ new Date(h.updated_at).toLocaleDateString() }}</div>
+        <!-- Prompt Template Edit Modal -->
+        <div v-if="promptTemplateModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="promptTemplateModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[700px] max-h-[90vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ promptTemplateModal.isNew ? '新建 Prompt' : '编辑 Prompt' }}</h2>
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">名称 (唯一标识) *</label>
+                  <input v-model="promptTemplateModal.form.name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">阶段 *</label>
+                  <select v-model="promptTemplateModal.form.stage" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                    <option value="process">process</option>
+                    <option value="rank">rank</option>
+                    <option value="archive">archive</option>
+                  </select>
                 </div>
               </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">模型 *</label>
+                  <input v-model="promptTemplateModal.form.model" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Temperature *</label>
+                  <input v-model.number="promptTemplateModal.form.temperature" type="number" step="0.1" min="0" max="2" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">版本 *</label>
+                  <input v-model.number="promptTemplateModal.form.version" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Model Base URL *</label>
+                <input v-model="promptTemplateModal.form.model_base_url" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Max Retries</label>
+                  <input v-model.number="promptTemplateModal.form.max_retries" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Request Interval (s)</label>
+                  <input v-model.number="promptTemplateModal.form.request_interval" type="number" step="0.1" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+                <div @click="promptTemplateModal.form.enabled = !promptTemplateModal.form.enabled" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: promptTemplateModal.form.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                  <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: promptTemplateModal.form.enabled ? '18px' : '2px' }"></div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Template (Prompt 文本) *</label>
+                <textarea v-model="promptTemplateModal.form.template" rows="16" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y leading-relaxed" placeholder="输入 Prompt 模板..."></textarea>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="promptTemplateModal.show = false" class="btn-secondary">取消</button>
+              <button @click="savePromptTemplate" class="btn-primary">{{ promptTemplateModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 排序规则 (rank_group_configs + tag_slot_configs) -->
+      <div class="page active" v-if="currentTab === 'ranking'">
+        <div class="flex flex-col h-full w-full bg-dark-bg overflow-hidden">
+          <div class="flex items-center justify-between px-7 py-5 border-b border-border bg-surface">
+            <div>
+              <h2 class="text-xl font-extrabold text-text tracking-tight">排序规则</h2>
+              <p class="text-xs text-text-dim mt-1 font-mono">精排分组 + 特殊标签名额管理</p>
+            </div>
+            <div class="flex gap-2">
+              <div :class="['tab', rankingSubTab === 'groups' ? 'active' : '']" @click="rankingSubTab = 'groups'" style="cursor:pointer">分组管理</div>
+              <div :class="['tab', rankingSubTab === 'tags' ? 'active' : '']" @click="rankingSubTab = 'tags'" style="cursor:pointer">标签名额</div>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto p-6">
+
+            <!-- rank_group_configs -->
+            <div v-if="rankingSubTab === 'groups'">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold text-text">精排分组 (rank_group_configs)</div>
+                <button class="btn-new" @click="createRankGroup">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增分组
+                </button>
+              </div>
+              <div v-if="loading.rankGroups" class="text-center py-10 text-text-muted">加载中...</div>
+              <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+                <thead>
+                  <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                    <th class="px-4 pb-2">排序</th>
+                    <th class="px-4 pb-2">分组名称</th>
+                    <th class="px-4 pb-2">Source Names</th>
+                    <th class="px-4 pb-2">上限</th>
+                    <th class="px-4 pb-2">必须展示</th>
+                    <th class="px-4 pb-2">启用</th>
+                    <th class="px-4 pb-2">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="rg in sortedRankGroups" :key="rg.id" class="bg-surface border border-border rounded-xl">
+                    <td class="px-4 py-3 font-mono text-text-muted">{{ rg.sort_order }}</td>
+                    <td class="px-4 py-3 font-semibold text-text">{{ rg.group_name }}</td>
+                    <td class="px-4 py-3">
+                      <div class="flex flex-wrap gap-1">
+                        <span v-for="sn in (rg.source_names || [])" :key="sn" class="card-tag text-[10px]">{{ sn }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 font-mono">{{ rg.limit }}</td>
+                    <td class="px-4 py-3">
+                      <span :class="['card-tag', rg.must_include ? 'tag-done' : 'tag-pending']">{{ rg.must_include ? '是' : '否' }}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div @click="toggleRankGroupEnabled(rg)" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: rg.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                        <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: rg.enabled ? '18px' : '2px' }"></div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex gap-2">
+                        <button class="btn-secondary text-xs py-1 px-3" @click="editRankGroup(rg)">编辑</button>
+                        <button class="btn-danger text-xs py-1 px-3" @click="confirmDeleteRankGroup(rg)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- tag_slot_configs -->
+            <div v-if="rankingSubTab === 'tags'">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold text-text">特殊标签名额 (tag_slot_configs)</div>
+                <button class="btn-new" @click="createTagSlot">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增标签
+                </button>
+              </div>
+              <div v-if="loading.tagSlots" class="text-center py-10 text-text-muted">加载中...</div>
+              <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+                <thead>
+                  <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                    <th class="px-4 pb-2">标签名</th>
+                    <th class="px-4 pb-2">每日上限</th>
+                    <th class="px-4 pb-2">最低分数</th>
+                    <th class="px-4 pb-2">启用</th>
+                    <th class="px-4 pb-2">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="ts in tagSlotConfigs" :key="ts.id" class="bg-surface border border-border rounded-xl">
+                    <td class="px-4 py-3 font-semibold text-text">{{ ts.tag_name }}</td>
+                    <td class="px-4 py-3 font-mono">{{ ts.max_slots }}</td>
+                    <td class="px-4 py-3 font-mono">{{ ts.min_score }}</td>
+                    <td class="px-4 py-3">
+                      <div @click="toggleTagSlotEnabled(ts)" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: ts.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                        <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: ts.enabled ? '18px' : '2px' }"></div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex gap-2">
+                        <button class="btn-secondary text-xs py-1 px-3" @click="editTagSlot(ts)">编辑</button>
+                        <button class="btn-danger text-xs py-1 px-3" @click="confirmDeleteTagSlot(ts)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rank Group Edit Modal -->
+        <div v-if="rankGroupModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="rankGroupModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[540px] max-h-[85vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ rankGroupModal.isNew ? '新增分组' : '编辑分组' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">分组名称 *</label>
+                <input v-model="rankGroupModal.form.group_name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Source Names (从 scraper_configs 选择)</label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <span v-for="sn in rankGroupModal.form.source_names" :key="sn" class="card-tag tag-done flex items-center gap-1">
+                    {{ sn }}
+                    <span @click="removeSourceName(sn)" class="cursor-pointer text-red ml-1">&times;</span>
+                  </span>
+                </div>
+                <select @change="addSourceName($event)" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                  <option value="">添加来源...</option>
+                  <option v-for="sn in availableSourceNames" :key="sn" :value="sn">{{ sn }}</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">上限 *</label>
+                  <input v-model.number="rankGroupModal.form.limit" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">排列顺序 *</label>
+                  <input v-model.number="rankGroupModal.form.sort_order" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                  <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">必须展示</label>
+                  <div @click="rankGroupModal.form.must_include = !rankGroupModal.form.must_include" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: rankGroupModal.form.must_include ? 'var(--green)' : 'var(--surface3)' }">
+                    <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: rankGroupModal.form.must_include ? '18px' : '2px' }"></div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+                  <div @click="rankGroupModal.form.enabled = !rankGroupModal.form.enabled" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: rankGroupModal.form.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                    <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: rankGroupModal.form.enabled ? '18px' : '2px' }"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="rankGroupModal.show = false" class="btn-secondary">取消</button>
+              <button @click="saveRankGroup" class="btn-primary">{{ rankGroupModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tag Slot Edit Modal -->
+        <div v-if="tagSlotModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="tagSlotModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[440px] shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ tagSlotModal.isNew ? '新增标签' : '编辑标签' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">标签名 (UNIQUE) *</label>
+                <input v-model="tagSlotModal.form.tag_name" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">每日上限 *</label>
+                <input v-model.number="tagSlotModal.form.max_slots" type="number" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">最低分数 *</label>
+                <input v-model.number="tagSlotModal.form.min_score" type="number" step="0.1" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+                <div @click="tagSlotModal.form.enabled = !tagSlotModal.form.enabled" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: tagSlotModal.form.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                  <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: tagSlotModal.form.enabled ? '18px' : '2px' }"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="tagSlotModal.show = false" class="btn-secondary">取消</button>
+              <button @click="saveTagSlot" class="btn-primary">{{ tagSlotModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: 系统设置 (pipeline_params + display_metrics_configs + content_fetch_rules) -->
+      <div class="page active" v-if="currentTab === 'cfgsettings'">
+        <div class="flex flex-col h-full w-full bg-dark-bg overflow-hidden">
+          <div class="flex items-center justify-between px-7 py-5 border-b border-border bg-surface">
+            <div>
+              <h2 class="text-xl font-extrabold text-text tracking-tight">系统设置</h2>
+              <p class="text-xs text-text-dim mt-1 font-mono">全局参数 / 展示指标 / 正文规则</p>
+            </div>
+            <div class="flex gap-2">
+              <div :class="['tab', settingsSubTab === 'params' ? 'active' : '']" @click="settingsSubTab = 'params'" style="cursor:pointer">全局参数</div>
+              <div :class="['tab', settingsSubTab === 'metrics' ? 'active' : '']" @click="settingsSubTab = 'metrics'" style="cursor:pointer">展示指标</div>
+              <div :class="['tab', settingsSubTab === 'fetchrules' ? 'active' : '']" @click="settingsSubTab = 'fetchrules'" style="cursor:pointer">正文规则</div>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto p-6">
+
+            <!-- pipeline_params -->
+            <div v-if="settingsSubTab === 'params'">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold text-text">全局参数 (pipeline_params)</div>
+                <button class="btn-new" @click="createPipelineParam">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增参数
+                </button>
+              </div>
+              <div v-if="loading.pipelineParams" class="text-center py-10 text-text-muted">加载中...</div>
+              <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+                <thead>
+                  <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                    <th class="px-4 pb-2">Key</th>
+                    <th class="px-4 pb-2">Value</th>
+                    <th class="px-4 pb-2">Description</th>
+                    <th class="px-4 pb-2">更新时间</th>
+                    <th class="px-4 pb-2">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="pp in pipelineParams" :key="pp.key" class="bg-surface border border-border rounded-xl">
+                    <td class="px-4 py-3 font-mono font-semibold text-accent">{{ pp.key }}</td>
+                    <td class="px-4 py-3 font-mono text-text">{{ JSON.stringify(pp.value) }}</td>
+                    <td class="px-4 py-3 text-text-muted text-xs">{{ pp.description || '-' }}</td>
+                    <td class="px-4 py-3 font-mono text-text-dim text-xs">{{ pp.updated_at ? new Date(pp.updated_at).toLocaleString() : '-' }}</td>
+                    <td class="px-4 py-3">
+                      <div class="flex gap-2">
+                        <button class="btn-secondary text-xs py-1 px-3" @click="editPipelineParam(pp)">编辑</button>
+                        <button class="btn-danger text-xs py-1 px-3" @click="confirmDeletePipelineParam(pp)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- display_metrics_configs -->
+            <div v-if="settingsSubTab === 'metrics'">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold text-text">展示指标配置 (display_metrics_configs)</div>
+                <button class="btn-new" @click="createDisplayMetric">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增
+                </button>
+              </div>
+              <div v-if="loading.displayMetrics" class="text-center py-10 text-text-muted">加载中...</div>
+              <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+                <thead>
+                  <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                    <th class="px-4 pb-2">Content Type</th>
+                    <th class="px-4 pb-2">Metrics</th>
+                    <th class="px-4 pb-2">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="dm in displayMetricsConfigs" :key="dm.id" class="bg-surface border border-border rounded-xl">
+                    <td class="px-4 py-3 font-mono font-semibold text-accent">{{ dm.content_type }}</td>
+                    <td class="px-4 py-3">
+                      <div class="flex flex-wrap gap-1">
+                        <span v-for="m in (dm.metrics || [])" :key="m.key" class="card-tag text-[10px]">{{ m.label }} ({{ m.format }})</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex gap-2">
+                        <button class="btn-secondary text-xs py-1 px-3" @click="editDisplayMetric(dm)">编辑</button>
+                        <button class="btn-danger text-xs py-1 px-3" @click="confirmDeleteDisplayMetric(dm)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- content_fetch_rules -->
+            <div v-if="settingsSubTab === 'fetchrules'">
+              <div class="flex items-center justify-between mb-4">
+                <div class="text-sm font-bold text-text">正文补全规则 (content_fetch_rules)</div>
+                <button class="btn-new" @click="createFetchRule">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增规则
+                </button>
+              </div>
+              <div v-if="loading.fetchRules" class="text-center py-10 text-text-muted">加载中...</div>
+              <table v-else class="w-full text-sm" style="border-collapse:separate; border-spacing:0 6px;">
+                <thead>
+                  <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                    <th class="px-4 pb-2">规则类型</th>
+                    <th class="px-4 pb-2">值</th>
+                    <th class="px-4 pb-2">启用</th>
+                    <th class="px-4 pb-2">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="fr in contentFetchRules" :key="fr.id" class="bg-surface border border-border rounded-xl">
+                    <td class="px-4 py-3"><span class="card-tag" :class="fr.rule_type === 'skip_domain' ? 'tag-pending' : 'tag-done'">{{ fr.rule_type }}</span></td>
+                    <td class="px-4 py-3 font-mono text-text">{{ fr.value }}</td>
+                    <td class="px-4 py-3">
+                      <div @click="toggleFetchRuleEnabled(fr)" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: fr.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                        <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: fr.enabled ? '18px' : '2px' }"></div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex gap-2">
+                        <button class="btn-secondary text-xs py-1 px-3" @click="editFetchRule(fr)">编辑</button>
+                        <button class="btn-danger text-xs py-1 px-3" @click="confirmDeleteFetchRule(fr)">删除</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Pipeline Param Edit Modal -->
+        <div v-if="pipelineParamModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="pipelineParamModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[440px] shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ pipelineParamModal.isNew ? '新增参数' : '编辑参数' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Key *</label>
+                <input v-model="pipelineParamModal.form.key" type="text" :disabled="!pipelineParamModal.isNew" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none disabled:opacity-50">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Value (JSON) *</label>
+                <input v-model="pipelineParamModal.valueStr" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm font-mono text-text focus:border-accent outline-none" placeholder='120 or "string"'>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Description</label>
+                <input v-model="pipelineParamModal.form.description" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="pipelineParamModal.show = false" class="btn-secondary">取消</button>
+              <button @click="savePipelineParam" class="btn-primary">{{ pipelineParamModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Display Metric Edit Modal -->
+        <div v-if="displayMetricModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="displayMetricModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[540px] max-h-[85vh] overflow-y-auto shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ displayMetricModal.isNew ? '新增展示指标' : '编辑展示指标' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Content Type (UNIQUE) *</label>
+                <input v-model="displayMetricModal.form.content_type" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">Metrics (JSON Array) *</label>
+                <textarea v-model="displayMetricModal.metricsJson" rows="8" class="w-full bg-bg border border-border rounded-xl px-4 py-3 text-xs font-mono text-text focus:border-accent outline-none resize-y" placeholder='[{"label":"⭐ Stars","key":"stars","format":"number"}]'></textarea>
+                <div v-if="displayMetricModal.jsonError" class="text-red text-xs mt-1">{{ displayMetricModal.jsonError }}</div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="displayMetricModal.show = false" class="btn-secondary">取消</button>
+              <button @click="saveDisplayMetric" class="btn-primary">{{ displayMetricModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fetch Rule Edit Modal -->
+        <div v-if="fetchRuleModal.show" class="fixed inset-0 bg-dark-bg/80 flex items-center justify-center z-50 backdrop-blur-md" @click.self="fetchRuleModal.show = false">
+          <div class="bg-surface border border-border rounded-3xl p-8 w-[440px] shadow-2xl">
+            <h2 class="text-xl font-extrabold mb-6 text-text tracking-tighter">{{ fetchRuleModal.isNew ? '新增规则' : '编辑规则' }}</h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">规则类型 *</label>
+                <select v-model="fetchRuleModal.form.rule_type" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none">
+                  <option value="skip_domain">skip_domain</option>
+                  <option value="fetch_fulltext_tag">fetch_fulltext_tag</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1">值 *</label>
+                <input v-model="fetchRuleModal.form.value" type="text" class="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:border-accent outline-none" placeholder="如 twitter.com 或 official_ai">
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest">启用</label>
+                <div @click="fetchRuleModal.form.enabled = !fetchRuleModal.form.enabled" class="w-9 h-5 rounded-full cursor-pointer transition-all relative" :style="{ background: fetchRuleModal.form.enabled ? 'var(--green)' : 'var(--surface3)' }">
+                  <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all" :style="{ left: fetchRuleModal.form.enabled ? '18px' : '2px' }"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+              <button @click="fetchRuleModal.show = false" class="btn-secondary">取消</button>
+              <button @click="saveFetchRule" class="btn-primary">{{ fetchRuleModal.isNew ? '创建' : '保存' }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: Pipeline 运行监控 (pipeline_runs + scraper_runs) -->
+      <div class="page active" v-if="currentTab === 'runs'">
+        <div class="flex flex-col h-full w-full bg-dark-bg overflow-hidden">
+          <div class="flex items-center justify-between px-7 py-5 border-b border-border bg-surface">
+            <div>
+              <h2 class="text-xl font-extrabold text-text tracking-tight">Pipeline 运行监控</h2>
+              <p class="text-xs text-text-dim mt-1 font-mono">pipeline_runs + scraper_runs (只读)</p>
+            </div>
+            <button class="btn-secondary" @click="loadPipelineRuns">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              刷新
+            </button>
+          </div>
+          <div class="flex flex-1 overflow-hidden">
+            <!-- Pipeline Runs List -->
+            <div class="list-pane" style="width:420px; min-width:420px;">
+              <div class="list-pane-header">
+                <div class="list-pane-title">运行记录</div>
+                <span class="nav-badge" v-if="pipelineRuns.length">{{ pipelineRuns.length }}</span>
+              </div>
+              <div class="item-list">
+                <div v-if="loading.pipelineRuns" class="text-center py-10 text-text-muted">加载中...</div>
+                <div v-for="pr in pipelineRuns" :key="pr.id"
+                     :class="['content-card', selectedPipelineRun?.id === pr.id ? 'active' : '']"
+                     @click="selectPipelineRun(pr)">
+                  <div class="card-top">
+                    <div class="card-title flex items-center gap-2">
+                      <span :class="['card-tag', pr.status === 'success' ? 'tag-done' : pr.status === 'failed' ? 'tag-fail' : 'tag-processing']">{{ pr.status }}</span>
+                      <span class="card-tag">{{ pr.run_type }}</span>
+                    </div>
+                  </div>
+                  <div class="card-meta mt-1">
+                    <div class="meta-pill">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ new Date(pr.started_at).toLocaleString() }}
+                    </div>
+                    <div class="meta-pill" v-if="pr.finished_at">耗时 {{ getDuration(pr.started_at, pr.finished_at) }}</div>
+                    <div v-if="pr.table_suffix" class="meta-pill">suffix: {{ pr.table_suffix }}</div>
+                  </div>
+                  <div v-if="pr.stats" class="card-meta mt-1">
+                    <div class="meta-pill">抓取 {{ pr.stats.scraped || 0 }}</div>
+                    <div class="meta-pill">处理 {{ pr.stats.processed || 0 }}</div>
+                    <div class="meta-pill">精排 {{ pr.stats.ranked || 0 }}</div>
+                    <div class="meta-pill" v-if="pr.stats.errors">错误 <span class="text-red">{{ pr.stats.errors }}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pipeline Run Detail -->
+            <div class="detail-pane" v-if="selectedPipelineRun">
+              <div class="detail-topbar">
+                <div class="mini-stat">状态 <span class="mini-stat-val" :style="{ color: selectedPipelineRun.status === 'success' ? 'var(--green)' : selectedPipelineRun.status === 'failed' ? 'var(--red)' : 'var(--blue)' }">{{ selectedPipelineRun.status }}</span></div>
+                <div class="divider-v"></div>
+                <div class="mini-stat">类型 <span class="mini-stat-val">{{ selectedPipelineRun.run_type }}</span></div>
+                <div class="divider-v"></div>
+                <div class="mini-stat">开始 <span class="mini-stat-val">{{ new Date(selectedPipelineRun.started_at).toLocaleString() }}</span></div>
+                <div v-if="selectedPipelineRun.finished_at" class="divider-v"></div>
+                <div v-if="selectedPipelineRun.finished_at" class="mini-stat">耗时 <span class="mini-stat-val">{{ getDuration(selectedPipelineRun.started_at, selectedPipelineRun.finished_at) }}</span></div>
+              </div>
+              <div class="detail-body">
+                <div v-if="selectedPipelineRun.error" class="content-block" style="border-color: rgba(232,88,88,0.3);">
+                  <div class="block-label" style="color:var(--red)">错误信息</div>
+                  <div class="block-text font-mono text-xs text-red whitespace-pre-wrap">{{ selectedPipelineRun.error }}</div>
+                </div>
+
+                <div v-if="selectedPipelineRun.stats" class="content-block">
+                  <div class="block-label">统计数据</div>
+                  <div class="grid grid-cols-5 gap-3">
+                    <div v-for="(val, key) in selectedPipelineRun.stats" :key="key" class="qa-score-card">
+                      <div class="score-label">{{ key }}</div>
+                      <div class="score-val" style="font-size:24px; color:var(--text)">{{ val }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Scraper Runs -->
+                <div class="content-block">
+                  <div class="block-label">Scraper 运行明细 ({{ selectedRunScraperRuns.length }})</div>
+                  <div v-if="loading.scraperRuns" class="text-center py-4 text-text-muted text-xs">加载中...</div>
+                  <table v-else-if="selectedRunScraperRuns.length" class="w-full text-xs" style="border-collapse:separate; border-spacing:0 4px;">
+                    <thead>
+                      <tr class="text-left text-text-dim text-[10px] uppercase tracking-wider font-mono">
+                        <th class="px-3 pb-1">Scraper</th>
+                        <th class="px-3 pb-1">类型</th>
+                        <th class="px-3 pb-1">状态</th>
+                        <th class="px-3 pb-1">抓取</th>
+                        <th class="px-3 pb-1">入库</th>
+                        <th class="px-3 pb-1">耗时</th>
+                        <th class="px-3 pb-1">错误</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="sr in selectedRunScraperRuns" :key="sr.id" class="bg-surface2 rounded-lg">
+                        <td class="px-3 py-2 font-semibold text-text">{{ sr.scraper_name }}</td>
+                        <td class="px-3 py-2"><span class="card-tag text-[9px]">{{ sr.scraper_type }}</span></td>
+                        <td class="px-3 py-2">
+                          <span :class="['card-tag text-[9px]', sr.status === 'success' ? 'tag-done' : sr.status === 'failed' ? 'tag-fail' : sr.status === 'timeout' ? 'tag-pending' : 'tag-processing']">{{ sr.status }}</span>
+                        </td>
+                        <td class="px-3 py-2 font-mono">{{ sr.items_fetched ?? '-' }}</td>
+                        <td class="px-3 py-2 font-mono">{{ sr.items_saved ?? '-' }}</td>
+                        <td class="px-3 py-2 font-mono text-text-dim">{{ sr.finished_at ? getDuration(sr.started_at, sr.finished_at) : '-' }}</td>
+                        <td class="px-3 py-2 text-red truncate max-w-[200px]" :title="sr.error">{{ sr.error || '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div v-else class="text-text-dim text-xs py-4">无 scraper 运行记录</div>
+                </div>
+
+                <div v-if="selectedPipelineRun.config_snapshot" class="content-block">
+                  <div class="block-label">配置快照 (config_snapshot)</div>
+                  <div class="whitespace-pre-wrap font-mono text-[11px] text-text-muted bg-bg p-4 rounded-lg border border-border max-h-[400px] overflow-y-auto">{{ JSON.stringify(selectedPipelineRun.config_snapshot, null, 2) }}</div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="flex-1 flex flex-col items-center justify-center text-text-dim bg-dark-bg">
+              <div class="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-4 text-text-muted">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="text-sm font-bold tracking-tight">选择一次运行查看详情</div>
             </div>
           </div>
         </div>
@@ -1689,7 +2389,11 @@
           if (currentTab.value === 'raw') loadRawItems();
           else if (currentTab.value === 'processed') loadProcessedItems();
           else if (currentTab.value === 'display') loadDisplayItems();
-          else if (currentTab.value === 'prompts') loadPrompts();
+          else if (currentTab.value === 'scrapers') loadScraperConfigs();
+          else if (currentTab.value === 'prompts') loadPromptTemplates();
+          else if (currentTab.value === 'ranking') { loadRankGroupConfigs(); loadTagSlotConfigs(); }
+          else if (currentTab.value === 'cfgsettings') { loadPipelineParams(); loadDisplayMetricsConfigs(); loadContentFetchRules(); }
+          else if (currentTab.value === 'runs') loadPipelineRuns();
           else if (currentTab.value === 'qa') loadQaResults();
           else if (currentTab.value === 'analytics') loadAnalytics();
           showToast(`已切换至${isTest ? '测试' : '生产'}环境`);
@@ -1704,7 +2408,11 @@
           if (currentTab.value === 'raw') loadRawItems();
           else if (currentTab.value === 'processed') loadProcessedItems();
           else if (currentTab.value === 'display') loadDisplayItems();
-          else if (currentTab.value === 'prompts') loadPrompts();
+          else if (currentTab.value === 'scrapers') loadScraperConfigs();
+          else if (currentTab.value === 'prompts') loadPromptTemplates();
+          else if (currentTab.value === 'ranking') { loadRankGroupConfigs(); loadTagSlotConfigs(); }
+          else if (currentTab.value === 'cfgsettings') { loadPipelineParams(); loadDisplayMetricsConfigs(); loadContentFetchRules(); }
+          else if (currentTab.value === 'runs') loadPipelineRuns();
           else if (currentTab.value === 'qa') loadQaResults();
           else if (currentTab.value === 'analytics') loadAnalytics();
         };
@@ -1726,7 +2434,7 @@
         });
         const rawFilters = reactive({ date: todayStr });
         const activeSources = ref([]); // Sources to SHOW
-        const loading = reactive({ raw: false, processed: false, display: false, analytics: false });
+        const loading = reactive({ raw: false, processed: false, display: false, analytics: false, scrapers: false, rankGroups: false, tagSlots: false, pipelineParams: false, displayMetrics: false, fetchRules: false, pipelineRuns: false, scraperRuns: false });
 
         const dynamicSourceOptions = computed(() => {
           const counts = {};
@@ -2288,154 +2996,589 @@ Aha Index: {aha_index}
           link.click();
         };
 
-        // Tab 4: Prompts
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 1: scraper_configs
+        // ════════════════════════════════════════════════════════
+        const scraperConfigs = ref([]);
+        const scraperTypeOptions = ['github_trending','github_search','hackernews','rss','twitter_twscrape','twitter_nitter','ai_blog','community_v2ex','community_linuxdo'];
+        const scraperModal = reactive({
+          show: false, isNew: true, configJson: '{}', configError: '',
+          form: { name: '', scraper_type: '', enabled: true, priority: 10, config: {} }
+        });
+
+        const scraperConfigHints = {
+          github_trending: '{ source_type, content_type, timeout }',
+          github_search: '{ source_type, content_type, queries:[{q,label}], per_page, fetch_window_days, badge_patterns, max_readme_images }',
+          hackernews: '{ source_type, content_type, new_n, min_score, cutoff_hours, fetch_workers, skip_domains }',
+          rss: '{ source_type, content_type, url, max_items, source_tag, fetch_window_hours }',
+          twitter_twscrape: '{ source_type, content_type, watch_accounts, tracked_keywords, search_limit, timeline_limit, timeline_min_faves, max_age_days }',
+          twitter_nitter: '{ source_type, content_type, twitter_user, source_tag, aggregate, nitter_instances, fetch_window_hours }',
+          ai_blog: '{ source_type, content_type, base_url, news_url, link_selector, author, source_tag, fetch_window_hours }',
+          community_v2ex: '{ source_type, content_type, top_n, max_replies_to_fetch, max_replies_to_keep, source_tag }',
+          community_linuxdo: '{ source_type, content_type, top_n, max_replies_to_fetch, source_tag }'
+        };
+        const getScraperConfigHint = (type) => scraperConfigHints[type] || '{}';
+
+        const loadScraperConfigs = async () => {
+          if (!supabase) return;
+          loading.scrapers = true;
+          try {
+            const { data, error } = await supabase.from('scraper_configs').select('*').order('priority', { ascending: true });
+            if (error) throw error;
+            scraperConfigs.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.scrapers = false; }
+        };
+
+        const createScraperConfig = () => {
+          scraperModal.isNew = true;
+          scraperModal.form = { name: '', scraper_type: '', enabled: true, priority: 10, config: {} };
+          scraperModal.configJson = '{\n  "source_type": "",\n  "content_type": ""\n}';
+          scraperModal.configError = '';
+          scraperModal.show = true;
+        };
+
+        const editScraperConfig = (sc) => {
+          scraperModal.isNew = false;
+          scraperModal.form = { ...sc };
+          scraperModal.configJson = JSON.stringify(sc.config || {}, null, 2);
+          scraperModal.configError = '';
+          scraperModal.show = true;
+        };
+
+        const onScraperTypeChange = () => {
+          const type = scraperModal.form.scraper_type;
+          if (!type) return;
+          try { JSON.parse(scraperModal.configJson); } catch { scraperModal.configJson = '{\n  "source_type": "",\n  "content_type": ""\n}'; }
+        };
+
+        const saveScraperConfig = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          let config;
+          try { config = JSON.parse(scraperModal.configJson); scraperModal.configError = ''; }
+          catch (e) { scraperModal.configError = 'JSON 格式错误: ' + e.message; return; }
+
+          const payload = { name: scraperModal.form.name, scraper_type: scraperModal.form.scraper_type, enabled: scraperModal.form.enabled, priority: scraperModal.form.priority, config };
+          try {
+            if (scraperModal.isNew) {
+              const { error } = await supabase.from('scraper_configs').insert([payload]);
+              if (error) throw error;
+              showToast('数据源已创建');
+            } else {
+              const { error } = await supabase.from('scraper_configs').update(payload).eq('id', scraperModal.form.id);
+              if (error) throw error;
+              showToast('数据源已更新');
+            }
+            scraperModal.show = false;
+            await loadScraperConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        const toggleScraperEnabled = async (sc) => {
+          if (!supabase) return;
+          try {
+            const { error } = await supabase.from('scraper_configs').update({ enabled: !sc.enabled }).eq('id', sc.id);
+            if (error) throw error;
+            sc.enabled = !sc.enabled;
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeleteScraper = async (sc) => {
+          if (!confirm(`确定要删除数据源 "${sc.name}" 吗？`)) return;
+          try {
+            const { error } = await supabase.from('scraper_configs').delete().eq('id', sc.id);
+            if (error) throw error;
+            showToast('已删除');
+            await loadScraperConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 2: prompt_templates
+        // ════════════════════════════════════════════════════════
+        const promptTemplates = ref([]);
+        const selectedPromptTemplate = ref(null);
+        const promptTemplateSearch = ref('');
+        const promptTemplateStageFilter = ref('all');
+        const promptTemplateModal = reactive({
+          show: false, isNew: true,
+          form: { name: '', stage: 'process', template: '', model: 'kimi-k2.5', model_base_url: 'https://api.moonshot.cn/v1', temperature: 0.3, max_retries: 3, request_interval: 0.5, enabled: true, version: 1 }
+        });
+
+        const filteredPromptTemplates = computed(() => {
+          let list = promptTemplates.value;
+          if (promptTemplateStageFilter.value !== 'all') list = list.filter(p => p.stage === promptTemplateStageFilter.value);
+          if (promptTemplateSearch.value) list = list.filter(p => p.name.toLowerCase().includes(promptTemplateSearch.value.toLowerCase()) || p.template.toLowerCase().includes(promptTemplateSearch.value.toLowerCase()));
+          return list;
+        });
+
+        const loadPromptTemplates = async () => {
+          if (!supabase) return;
+          try {
+            const { data, error } = await supabase.from('prompt_templates').select('*').order('stage').order('name');
+            if (error) throw error;
+            promptTemplates.value = data || [];
+            if (promptTemplates.value.length > 0 && !selectedPromptTemplate.value) selectedPromptTemplate.value = promptTemplates.value[0];
+          } catch (e) { showToast(e.message); }
+        };
+
+        const selectPromptTemplate = (pt) => { selectedPromptTemplate.value = { ...pt }; };
+
+        const createPromptTemplate = () => {
+          promptTemplateModal.isNew = true;
+          promptTemplateModal.form = { name: '', stage: 'process', template: '', model: 'kimi-k2.5', model_base_url: 'https://api.moonshot.cn/v1', temperature: 0.3, max_retries: 3, request_interval: 0.5, enabled: true, version: 1 };
+          promptTemplateModal.show = true;
+        };
+
+        const editPromptTemplate = (pt) => {
+          promptTemplateModal.isNew = false;
+          promptTemplateModal.form = { ...pt };
+          promptTemplateModal.show = true;
+        };
+
+        const savePromptTemplate = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          const f = promptTemplateModal.form;
+          const payload = { name: f.name, stage: f.stage, template: f.template, model: f.model, model_base_url: f.model_base_url, temperature: f.temperature, max_retries: f.max_retries, request_interval: f.request_interval, enabled: f.enabled, version: f.version };
+          try {
+            if (promptTemplateModal.isNew) {
+              const { error } = await supabase.from('prompt_templates').insert([payload]);
+              if (error) throw error;
+              showToast('Prompt 已创建');
+            } else {
+              const { error } = await supabase.from('prompt_templates').update(payload).eq('id', f.id);
+              if (error) throw error;
+              showToast('Prompt 已更新');
+            }
+            promptTemplateModal.show = false;
+            await loadPromptTemplates();
+            if (selectedPromptTemplate.value?.id === f.id) selectedPromptTemplate.value = { ...f, ...payload };
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeletePromptTemplate = async () => {
+          if (!selectedPromptTemplate.value?.id) return;
+          if (!confirm(`确定要删除 "${selectedPromptTemplate.value.name}" 吗？`)) return;
+          try {
+            const { error } = await supabase.from('prompt_templates').delete().eq('id', selectedPromptTemplate.value.id);
+            if (error) throw error;
+            showToast('已删除');
+            selectedPromptTemplate.value = null;
+            await loadPromptTemplates();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // Keep old prompts ref for backward compat (used by QA tab)
         const prompts = ref([]);
         const selectedPrompt = ref(null);
         const promptTab = ref('editor');
+        const promptSearch = ref('');
         let mde = null;
+        const promptVariables = computed(() => []);
+        const filteredPrompts = computed(() => []);
+        const promptHistory = computed(() => []);
+        const loadPrompts = async () => {};
+        const createNewPrompt = () => {};
+        const selectPrompt = () => {};
+        const savePromptAsNew = () => {};
+        const setActivePrompt = () => {};
+        const confirmDeletePrompt = () => {};
+        const deletePrompt = () => {};
 
-        const promptVariables = computed(() => {
-          if (!selectedPrompt.value || !selectedPrompt.value.content) return [];
-          const regex = /\{\{([^}]+)\}\}/g;
-          const matches = [];
-          let match;
-          while ((match = regex.exec(selectedPrompt.value.content)) !== null) {
-            matches.push(match[1].trim());
-          }
-          return [...new Set(matches)];
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 3: rank_group_configs
+        // ════════════════════════════════════════════════════════
+        const rankGroupConfigs = ref([]);
+        const rankingSubTab = ref('groups');
+        const rankGroupModal = reactive({
+          show: false, isNew: true,
+          form: { group_name: '', source_names: [], limit: 5, must_include: false, sort_order: 10, enabled: true }
         });
 
-        const filteredPrompts = computed(() => {
-          if (!promptSearch.value) {
-            const latest = {};
-            prompts.value.forEach(p => {
-              if (!latest[p.name] || p.version > latest[p.name].version) {
-                latest[p.name] = p;
-              }
-            });
-            return Object.values(latest);
-          }
-          return prompts.value.filter(p => p.name.toLowerCase().includes(promptSearch.value.toLowerCase()));
-        });
+        const sortedRankGroups = computed(() => [...rankGroupConfigs.value].sort((a, b) => a.sort_order - b.sort_order));
+        const availableSourceNames = computed(() => scraperConfigs.value.map(s => s.name).filter(n => !(rankGroupModal.form.source_names || []).includes(n)));
 
-        const promptHistory = computed(() => {
-          if (!selectedPrompt.value) return [];
-          return prompts.value
-            .filter(p => p.name === selectedPrompt.value.name)
-            .sort((a, b) => b.version - a.version);
-        });
-
-        const initMDE = () => {
-          const el = document.getElementById('prompt-editor');
-          if (!el) return;
-          
-          // If mde exists, check if it's still attached to a valid element in the DOM
-          if (mde) {
-            if (document.contains(mde.element)) return;
-            // If not, destroy old instance and create new one
-            mde.toTextArea();
-            mde = null;
-          }
-          
-          mde = new EasyMDE({
-            element: el,
-            spellChecker: false,
-            autosave: { enabled: false },
-            status: false,
-            placeholder: "输入 Prompt 内容...",
-            toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "|", "guide"],
-            minHeight: "100%",
-          });
-
-          mde.codemirror.on("change", () => {
-            if (selectedPrompt.value) {
-              selectedPrompt.value.content = mde.value();
-            }
-          });
+        const loadRankGroupConfigs = async () => {
+          if (!supabase) return;
+          loading.rankGroups = true;
+          try {
+            const { data, error } = await supabase.from('rank_group_configs').select('*').order('sort_order');
+            if (error) throw error;
+            rankGroupConfigs.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.rankGroups = false; }
         };
 
-        const loadPrompts = async () => {
+        const createRankGroup = () => {
+          rankGroupModal.isNew = true;
+          rankGroupModal.form = { group_name: '', source_names: [], limit: 5, must_include: false, sort_order: 10, enabled: true };
+          rankGroupModal.show = true;
+        };
+
+        const editRankGroup = (rg) => {
+          rankGroupModal.isNew = false;
+          rankGroupModal.form = { ...rg, source_names: [...(rg.source_names || [])] };
+          rankGroupModal.show = true;
+        };
+
+        const addSourceName = (e) => {
+          const val = e.target.value;
+          if (val && !rankGroupModal.form.source_names.includes(val)) rankGroupModal.form.source_names.push(val);
+          e.target.value = '';
+        };
+
+        const removeSourceName = (sn) => {
+          rankGroupModal.form.source_names = rankGroupModal.form.source_names.filter(s => s !== sn);
+        };
+
+        const saveRankGroup = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          const f = rankGroupModal.form;
+          const payload = { group_name: f.group_name, source_names: f.source_names, limit: f.limit, must_include: f.must_include, sort_order: f.sort_order, enabled: f.enabled };
+          try {
+            if (rankGroupModal.isNew) {
+              const { error } = await supabase.from('rank_group_configs').insert([payload]);
+              if (error) throw error;
+              showToast('分组已创建');
+            } else {
+              const { error } = await supabase.from('rank_group_configs').update(payload).eq('id', f.id);
+              if (error) throw error;
+              showToast('分组已更新');
+            }
+            rankGroupModal.show = false;
+            await loadRankGroupConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        const toggleRankGroupEnabled = async (rg) => {
           if (!supabase) return;
           try {
-            const { data, error } = await supabase.from(`prompts${settings.tableSuffix}`).select('*').order('updated_at', { ascending: false });
+            const { error } = await supabase.from('rank_group_configs').update({ enabled: !rg.enabled }).eq('id', rg.id);
             if (error) throw error;
-            prompts.value = data;
-            if (prompts.value.length > 0 && !selectedPrompt.value) {
-              selectPrompt(prompts.value[0]);
+            rg.enabled = !rg.enabled;
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeleteRankGroup = async (rg) => {
+          if (!confirm(`确定要删除分组 "${rg.group_name}" 吗？`)) return;
+          try {
+            const { error } = await supabase.from('rank_group_configs').delete().eq('id', rg.id);
+            if (error) throw error;
+            showToast('已删除');
+            await loadRankGroupConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 4: tag_slot_configs
+        // ════════════════════════════════════════════════════════
+        const tagSlotConfigs = ref([]);
+        const tagSlotModal = reactive({
+          show: false, isNew: true,
+          form: { tag_name: '', max_slots: 1, min_score: 0, enabled: true }
+        });
+
+        const loadTagSlotConfigs = async () => {
+          if (!supabase) return;
+          loading.tagSlots = true;
+          try {
+            const { data, error } = await supabase.from('tag_slot_configs').select('*').order('tag_name');
+            if (error) throw error;
+            tagSlotConfigs.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.tagSlots = false; }
+        };
+
+        const createTagSlot = () => {
+          tagSlotModal.isNew = true;
+          tagSlotModal.form = { tag_name: '', max_slots: 1, min_score: 0, enabled: true };
+          tagSlotModal.show = true;
+        };
+
+        const editTagSlot = (ts) => {
+          tagSlotModal.isNew = false;
+          tagSlotModal.form = { ...ts };
+          tagSlotModal.show = true;
+        };
+
+        const saveTagSlot = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          const f = tagSlotModal.form;
+          const payload = { tag_name: f.tag_name, max_slots: f.max_slots, min_score: f.min_score, enabled: f.enabled };
+          try {
+            if (tagSlotModal.isNew) {
+              const { error } = await supabase.from('tag_slot_configs').insert([payload]);
+              if (error) throw error;
+              showToast('标签已创建');
+            } else {
+              const { error } = await supabase.from('tag_slot_configs').update(payload).eq('id', f.id);
+              if (error) throw error;
+              showToast('标签已更新');
             }
-          } catch (e) {
-            showToast(e.message);
-          }
+            tagSlotModal.show = false;
+            await loadTagSlotConfigs();
+          } catch (e) { showToast(e.message); }
         };
 
-        const createNewPrompt = () => {
-          selectedPrompt.value = { name: 'New Prompt', content: '', version: 1, is_active: false };
-          promptTab.value = 'editor';
-          nextTick(() => {
-            initMDE();
-            mde.value('');
-          });
-        };
-
-        const selectPrompt = (p) => {
-          selectedPrompt.value = { ...p };
-          promptTab.value = 'editor';
-          nextTick(() => {
-            initMDE();
-            mde.value(p.content);
-          });
-        };
-
-        const savePromptAsNew = async () => {
-          if (!supabase || !selectedPrompt.value) return;
-          const content = mde ? mde.value() : selectedPrompt.value.content;
+        const toggleTagSlotEnabled = async (ts) => {
+          if (!supabase) return;
           try {
-            const newPrompt = {
-              name: selectedPrompt.value.name,
-              content: content,
-              version: (selectedPrompt.value.version || 0) + 1,
-              is_active: false
-            };
-            const { data, error } = await supabase.from(`prompts${settings.tableSuffix}`).insert([newPrompt]).select();
+            const { error } = await supabase.from('tag_slot_configs').update({ enabled: !ts.enabled }).eq('id', ts.id);
             if (error) throw error;
-            await loadPrompts();
-            selectedPrompt.value = data[0];
-            showToast('已保存为新版本');
-          } catch (e) {
-            showToast(e.message);
-          }
+            ts.enabled = !ts.enabled;
+          } catch (e) { showToast(e.message); }
         };
 
-        const setActivePrompt = async () => {
-          if (!supabase || !selectedPrompt.value?.id) return;
+        const confirmDeleteTagSlot = async (ts) => {
+          if (!confirm(`确定要删除标签 "${ts.tag_name}" 吗？`)) return;
           try {
-            await supabase.from(`prompts${settings.tableSuffix}`).update({ is_active: false }).eq('name', selectedPrompt.value.name);
-            const { error } = await supabase.from(`prompts${settings.tableSuffix}`).update({ is_active: true }).eq('id', selectedPrompt.value.id);
+            const { error } = await supabase.from('tag_slot_configs').delete().eq('id', ts.id);
             if (error) throw error;
-            await loadPrompts();
-            selectedPrompt.value.is_active = true;
-            showToast('已设为生效版本');
-          } catch (e) {
-            showToast(e.message);
-          }
+            showToast('已删除');
+            await loadTagSlotConfigs();
+          } catch (e) { showToast(e.message); }
         };
 
-        const confirmDeletePrompt = () => {
-          showDeleteModal.value = true;
-        };
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 5: pipeline_params
+        // ════════════════════════════════════════════════════════
+        const pipelineParams = ref([]);
+        const settingsSubTab = ref('params');
+        const pipelineParamModal = reactive({
+          show: false, isNew: true, valueStr: '',
+          form: { key: '', value: null, description: '' }
+        });
 
-        const deletePrompt = async () => {
-          if (!supabase || !selectedPrompt.value?.id) return;
+        const loadPipelineParams = async () => {
+          if (!supabase) return;
+          loading.pipelineParams = true;
           try {
-            const { error } = await supabase.from(`prompts${settings.tableSuffix}`).delete().eq('id', selectedPrompt.value.id);
+            const { data, error } = await supabase.from('pipeline_params').select('*').order('key');
             if (error) throw error;
-            showToast('提示词已删除');
-            showDeleteModal.value = false;
-            selectedPrompt.value = null;
-            await loadPrompts();
-          } catch (e) {
-            showToast('删除失败: ' + e.message);
-          }
+            pipelineParams.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.pipelineParams = false; }
+        };
+
+        const createPipelineParam = () => {
+          pipelineParamModal.isNew = true;
+          pipelineParamModal.form = { key: '', value: null, description: '' };
+          pipelineParamModal.valueStr = '';
+          pipelineParamModal.show = true;
+        };
+
+        const editPipelineParam = (pp) => {
+          pipelineParamModal.isNew = false;
+          pipelineParamModal.form = { ...pp };
+          pipelineParamModal.valueStr = JSON.stringify(pp.value);
+          pipelineParamModal.show = true;
+        };
+
+        const savePipelineParam = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          let value;
+          try { value = JSON.parse(pipelineParamModal.valueStr); } catch { value = pipelineParamModal.valueStr; }
+          const payload = { key: pipelineParamModal.form.key, value, description: pipelineParamModal.form.description };
+          try {
+            if (pipelineParamModal.isNew) {
+              const { error } = await supabase.from('pipeline_params').insert([payload]);
+              if (error) throw error;
+              showToast('参数已创建');
+            } else {
+              const { error } = await supabase.from('pipeline_params').update({ value, description: payload.description }).eq('key', payload.key);
+              if (error) throw error;
+              showToast('参数已更新');
+            }
+            pipelineParamModal.show = false;
+            await loadPipelineParams();
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeletePipelineParam = async (pp) => {
+          if (!confirm(`确定要删除参数 "${pp.key}" 吗？`)) return;
+          try {
+            const { error } = await supabase.from('pipeline_params').delete().eq('key', pp.key);
+            if (error) throw error;
+            showToast('已删除');
+            await loadPipelineParams();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 6: display_metrics_configs
+        // ════════════════════════════════════════════════════════
+        const displayMetricsConfigs = ref([]);
+        const displayMetricModal = reactive({
+          show: false, isNew: true, metricsJson: '[]', jsonError: '',
+          form: { content_type: '', metrics: [] }
+        });
+
+        const loadDisplayMetricsConfigs = async () => {
+          if (!supabase) return;
+          loading.displayMetrics = true;
+          try {
+            const { data, error } = await supabase.from('display_metrics_configs').select('*').order('content_type');
+            if (error) throw error;
+            displayMetricsConfigs.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.displayMetrics = false; }
+        };
+
+        const createDisplayMetric = () => {
+          displayMetricModal.isNew = true;
+          displayMetricModal.form = { content_type: '', metrics: [] };
+          displayMetricModal.metricsJson = '[\n  { "label": "", "key": "", "format": "number" }\n]';
+          displayMetricModal.jsonError = '';
+          displayMetricModal.show = true;
+        };
+
+        const editDisplayMetric = (dm) => {
+          displayMetricModal.isNew = false;
+          displayMetricModal.form = { ...dm };
+          displayMetricModal.metricsJson = JSON.stringify(dm.metrics || [], null, 2);
+          displayMetricModal.jsonError = '';
+          displayMetricModal.show = true;
+        };
+
+        const saveDisplayMetric = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          let metrics;
+          try { metrics = JSON.parse(displayMetricModal.metricsJson); displayMetricModal.jsonError = ''; }
+          catch (e) { displayMetricModal.jsonError = 'JSON 格式错误: ' + e.message; return; }
+          const payload = { content_type: displayMetricModal.form.content_type, metrics };
+          try {
+            if (displayMetricModal.isNew) {
+              const { error } = await supabase.from('display_metrics_configs').insert([payload]);
+              if (error) throw error;
+              showToast('已创建');
+            } else {
+              const { error } = await supabase.from('display_metrics_configs').update(payload).eq('id', displayMetricModal.form.id);
+              if (error) throw error;
+              showToast('已更新');
+            }
+            displayMetricModal.show = false;
+            await loadDisplayMetricsConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeleteDisplayMetric = async (dm) => {
+          if (!confirm(`确定要删除 "${dm.content_type}" 的展示指标吗？`)) return;
+          try {
+            const { error } = await supabase.from('display_metrics_configs').delete().eq('id', dm.id);
+            if (error) throw error;
+            showToast('已删除');
+            await loadDisplayMetricsConfigs();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // ════════════════════════════════════════════════════════
+        //  CONFIG TABLE 7: content_fetch_rules
+        // ════════════════════════════════════════════════════════
+        const contentFetchRules = ref([]);
+        const fetchRuleModal = reactive({
+          show: false, isNew: true,
+          form: { rule_type: 'skip_domain', value: '', enabled: true }
+        });
+
+        const loadContentFetchRules = async () => {
+          if (!supabase) return;
+          loading.fetchRules = true;
+          try {
+            const { data, error } = await supabase.from('content_fetch_rules').select('*').order('rule_type').order('value');
+            if (error) throw error;
+            contentFetchRules.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.fetchRules = false; }
+        };
+
+        const createFetchRule = () => {
+          fetchRuleModal.isNew = true;
+          fetchRuleModal.form = { rule_type: 'skip_domain', value: '', enabled: true };
+          fetchRuleModal.show = true;
+        };
+
+        const editFetchRule = (fr) => {
+          fetchRuleModal.isNew = false;
+          fetchRuleModal.form = { ...fr };
+          fetchRuleModal.show = true;
+        };
+
+        const saveFetchRule = async () => {
+          if (!supabase) return showToast('请先配置 Supabase');
+          const f = fetchRuleModal.form;
+          const payload = { rule_type: f.rule_type, value: f.value, enabled: f.enabled };
+          try {
+            if (fetchRuleModal.isNew) {
+              const { error } = await supabase.from('content_fetch_rules').insert([payload]);
+              if (error) throw error;
+              showToast('规则已创建');
+            } else {
+              const { error } = await supabase.from('content_fetch_rules').update(payload).eq('id', f.id);
+              if (error) throw error;
+              showToast('规则已更新');
+            }
+            fetchRuleModal.show = false;
+            await loadContentFetchRules();
+          } catch (e) { showToast(e.message); }
+        };
+
+        const toggleFetchRuleEnabled = async (fr) => {
+          if (!supabase) return;
+          try {
+            const { error } = await supabase.from('content_fetch_rules').update({ enabled: !fr.enabled }).eq('id', fr.id);
+            if (error) throw error;
+            fr.enabled = !fr.enabled;
+          } catch (e) { showToast(e.message); }
+        };
+
+        const confirmDeleteFetchRule = async (fr) => {
+          if (!confirm(`确定要删除规则 "${fr.value}" 吗？`)) return;
+          try {
+            const { error } = await supabase.from('content_fetch_rules').delete().eq('id', fr.id);
+            if (error) throw error;
+            showToast('已删除');
+            await loadContentFetchRules();
+          } catch (e) { showToast(e.message); }
+        };
+
+        // ════════════════════════════════════════════════════════
+        //  MONITORING TABLE 1: pipeline_runs
+        // ════════════════════════════════════════════════════════
+        const pipelineRuns = ref([]);
+        const selectedPipelineRun = ref(null);
+        const selectedRunScraperRuns = ref([]);
+
+        const getDuration = (start, end) => {
+          if (!start || !end) return '-';
+          const ms = new Date(end) - new Date(start);
+          if (ms < 1000) return ms + 'ms';
+          const secs = Math.round(ms / 1000);
+          if (secs < 60) return secs + 's';
+          const mins = Math.floor(secs / 60);
+          return mins + 'm ' + (secs % 60) + 's';
+        };
+
+        const loadPipelineRuns = async () => {
+          if (!supabase) return;
+          loading.pipelineRuns = true;
+          try {
+            const { data, error } = await supabase.from('pipeline_runs').select('*').order('started_at', { ascending: false }).limit(50);
+            if (error) throw error;
+            pipelineRuns.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.pipelineRuns = false; }
+        };
+
+        const selectPipelineRun = async (pr) => {
+          selectedPipelineRun.value = pr;
+          loading.scraperRuns = true;
+          selectedRunScraperRuns.value = [];
+          try {
+            const { data, error } = await supabase.from('scraper_runs').select('*').eq('pipeline_run_id', pr.id).order('started_at');
+            if (error) throw error;
+            selectedRunScraperRuns.value = data || [];
+          } catch (e) { showToast(e.message); }
+          finally { loading.scraperRuns = false; }
         };
 
         const analyticsFilters = reactive({ date: todayStr });
@@ -2569,7 +3712,11 @@ Aha Index: {aha_index}
           if (newTab === 'raw') loadRawItems();
           else if (newTab === 'processed') loadProcessedItems();
           else if (newTab === 'display') loadDisplayItems();
-          else if (newTab === 'prompts') loadPrompts();
+          else if (newTab === 'scrapers') loadScraperConfigs();
+          else if (newTab === 'prompts') loadPromptTemplates();
+          else if (newTab === 'ranking') { loadRankGroupConfigs(); loadTagSlotConfigs(); loadScraperConfigs(); }
+          else if (newTab === 'cfgsettings') { loadPipelineParams(); loadDisplayMetricsConfigs(); loadContentFetchRules(); }
+          else if (newTab === 'runs') loadPipelineRuns();
           else if (newTab === 'qa') loadQaResults();
           else if (newTab === 'analytics') loadAnalytics();
         });
@@ -2626,8 +3773,8 @@ Aha Index: {aha_index}
 
         return {
           currentTab, showSettings, settings, saveSettings, testConnection, testingConnection, toast,
-          stats, sourceOptions,
-          rawItems, rawFilters, loadRawItems, loading, selectedRawItem, rawContentHtml, filteredRawMetadata,
+          stats, sourceOptions, loading,
+          rawItems, rawFilters, loadRawItems, selectedRawItem, rawContentHtml, filteredRawMetadata,
           toggleSource, toggleAllSources, activeSources, dynamicSourceOptions, filteredRawItems,
           processedItems, processedFilters, loadProcessedItems, selectedProcessedItem, selectedProcessedRawItem, processedRawContentHtml,
           toggleProcessedSource, toggleAllProcessedSources, activeProcessedSources, dynamicProcessedSourceOptions, filteredProcessedItems,
@@ -2635,10 +3782,25 @@ Aha Index: {aha_index}
           toggleDisplaySource, toggleAllDisplaySources, activeDisplaySources, dynamicDisplaySourceOptions, filteredDisplayItems,
           qa, startQA, submitSingleQA, exportQA, selectedQaResult,
           toggleQaSource, toggleAllQaSources, activeQaSources, dynamicQaSourceOptions, filteredQaResults,
-          prompts, selectedPrompt, createNewPrompt, selectPrompt, savePromptAsNew, setActivePrompt,
-          promptTab, promptVariables,
-          showDeleteModal, confirmDeletePrompt, deletePrompt,
-          promptSearch, filteredPrompts, promptHistory,
+          // scraper_configs
+          scraperConfigs, scraperModal, scraperTypeOptions, createScraperConfig, editScraperConfig, saveScraperConfig, toggleScraperEnabled, confirmDeleteScraper, onScraperTypeChange, getScraperConfigHint, loadScraperConfigs,
+          // prompt_templates
+          promptTemplates, selectedPromptTemplate, promptTemplateSearch, promptTemplateStageFilter, promptTemplateModal, filteredPromptTemplates, loadPromptTemplates, selectPromptTemplate, createPromptTemplate, editPromptTemplate, savePromptTemplate, confirmDeletePromptTemplate,
+          // rank_group_configs
+          rankGroupConfigs, rankingSubTab, rankGroupModal, sortedRankGroups, availableSourceNames, createRankGroup, editRankGroup, saveRankGroup, toggleRankGroupEnabled, confirmDeleteRankGroup, addSourceName, removeSourceName,
+          // tag_slot_configs
+          tagSlotConfigs, tagSlotModal, createTagSlot, editTagSlot, saveTagSlot, toggleTagSlotEnabled, confirmDeleteTagSlot,
+          // pipeline_params
+          pipelineParams, settingsSubTab, pipelineParamModal, createPipelineParam, editPipelineParam, savePipelineParam, confirmDeletePipelineParam,
+          // display_metrics_configs
+          displayMetricsConfigs, displayMetricModal, createDisplayMetric, editDisplayMetric, saveDisplayMetric, confirmDeleteDisplayMetric,
+          // content_fetch_rules
+          contentFetchRules, fetchRuleModal, createFetchRule, editFetchRule, saveFetchRule, toggleFetchRuleEnabled, confirmDeleteFetchRule,
+          // pipeline_runs + scraper_runs
+          pipelineRuns, selectedPipelineRun, selectedRunScraperRuns, loadPipelineRuns, selectPipelineRun, getDuration,
+          // old prompts compat
+          prompts, selectedPrompt, promptTab, promptVariables, showDeleteModal, confirmDeletePrompt, deletePrompt: () => {}, promptSearch, filteredPrompts, promptHistory,
+          // analytics
           analyticsFilters, analyticsData, loadAnalytics, sortedLeaderboard,
           setEnv, changeDate,
           getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRankDetail
