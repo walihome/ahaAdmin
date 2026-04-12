@@ -2370,15 +2370,24 @@
         };
 
         // ── Auth methods ──
+        const clearStaleAuth = () => {
+          Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+        };
+
         const loginWithGithub = async () => {
           authBusy.value = true;
           authError.value = '';
           try {
-            const { error } = await supabase.auth.signInWithOAuth({
+            clearStaleAuth();
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const { data, error } = await supabase.auth.signInWithOAuth({
               provider: 'github',
               options: { redirectTo: window.location.origin + window.location.pathname }
             });
             if (error) throw error;
+            if (data?.url) {
+              window.location.href = data.url;
+            }
           } catch (e) {
             authError.value = '登录失败: ' + e.message;
             authBusy.value = false;
@@ -2387,6 +2396,7 @@
 
         const logout = async () => {
           await supabase.auth.signOut();
+          clearStaleAuth();
           isLoggedIn.value = false;
           authUser.value = null;
           showToast('已退出登录');
