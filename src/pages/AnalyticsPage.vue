@@ -63,6 +63,7 @@ async function loadItems() {
       .from(`user_events${settings.tableSuffix}`)
       .select('item_id, event_type')
       .in('item_id', itemIds)
+      .eq('snapshot_date', date.value)
     if (evError) throw evError
 
     if (!events || events.length === 0) {
