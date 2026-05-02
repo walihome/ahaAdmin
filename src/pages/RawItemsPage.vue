@@ -42,11 +42,11 @@ async function loadItems() {
       .order('created_at', { ascending: false })
 
     if (date.value) {
-      const start = new Date(date.value)
+      // Pipeline 用北京时间 (UTC+8) 写入，但 created_at 存的是 UTC
+      // 需要把北京时间 00:00~24:00 转换为对应的 UTC 范围
+      const start = new Date(date.value + 'T00:00:00+08:00')
       if (!isNaN(start.getTime())) {
-        start.setUTCHours(0, 0, 0, 0)
-        const end = new Date(start)
-        end.setUTCDate(end.getUTCDate() + 1)
+        const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
         query = query.gte('created_at', start.toISOString()).lt('created_at', end.toISOString())
       }
     }
