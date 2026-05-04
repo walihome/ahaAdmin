@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { marked } from 'marked'
 import { useSupabase } from '@/composables/useSupabase'
 import { useToast } from '@/composables/useToast'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
@@ -86,6 +87,11 @@ async function confirmDelete() {
 function estimateTokens(text: string) {
   if (!text) return 0
   return Math.round(text.length / 3.5)
+}
+
+function renderMarkdown(text: string) {
+  if (!text) return ''
+  return marked.parse(text, { breaks: true }) as string
 }
 
 defineExpose({ loadItems })
@@ -199,7 +205,7 @@ onMounted(loadItems)
               <div class="block-label" style="margin-bottom:0">Prompt 模板内容</div>
               <span class="pt-token-badge">≈ {{ estimateTokens(selected.template) }} tokens</span>
             </div>
-            <div class="whitespace-pre-wrap font-mono text-[12px] text-text-muted leading-relaxed bg-bg p-5 rounded-lg border border-border max-h-[60vh] overflow-y-auto">{{ selected.template }}</div>
+            <div class="markdown-body max-h-[60vh] overflow-y-auto" v-html="renderMarkdown(selected.template)"></div>
           </div>
         </div>
       </div>
@@ -339,5 +345,99 @@ onMounted(loadItems)
   font-size: 10px; font-family: var(--mono); color: var(--text-dim);
   background: var(--surface2); border: 1px solid var(--border);
   padding: 2px 8px; border-radius: 10px;
+}
+
+.markdown-body {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.markdown-body :deep(h1),
+.markdown-body :deep(h2),
+.markdown-body :deep(h3),
+.markdown-body :deep(h4) {
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  color: var(--text);
+}
+.markdown-body :deep(h1) { font-size: 1.4em; }
+.markdown-body :deep(h2) { font-size: 1.2em; }
+.markdown-body :deep(h3) { font-size: 1.05em; }
+.markdown-body :deep(p) {
+  margin-bottom: 0.75em;
+}
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+.markdown-body :deep(li) {
+  margin-bottom: 0.25em;
+}
+.markdown-body :deep(code) {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent-bright);
+}
+.markdown-body :deep(pre) {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin-bottom: 0.75em;
+}
+.markdown-body :deep(pre code) {
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.markdown-body :deep(blockquote) {
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  margin: 0.75em 0;
+  color: var(--text-muted);
+}
+.markdown-body :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.75em;
+}
+.markdown-body :deep(th),
+.markdown-body :deep(td) {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 12px;
+}
+.markdown-body :deep(th) {
+  background: var(--surface2);
+  font-weight: 600;
+}
+.markdown-body :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1em 0;
+}
+.markdown-body :deep(a) {
+  color: var(--accent-bright);
+  text-decoration: none;
+}
+.markdown-body :deep(a:hover) {
+  text-decoration: underline;
+}
+.markdown-body :deep(strong) {
+  font-weight: 700;
+  color: var(--text);
 }
 </style>

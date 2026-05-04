@@ -54,7 +54,7 @@ export function useSupabase() {
       reinit()
       const { data, error } = await supabaseRef.value.auth.signInWithOAuth({
         provider: 'github',
-        options: { redirectTo: window.location.origin + window.location.pathname }
+        options: { redirectTo: window.location.origin }
       })
       if (error) throw error
       if (data?.url) window.location.href = data.url

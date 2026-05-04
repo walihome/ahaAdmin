@@ -33,6 +33,25 @@ const filteredMetadata = computed(() => {
   return rest
 })
 
+function syntaxHighlightJson(obj: any): string {
+  const json = JSON.stringify(obj, null, 2)
+  return json.replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+    let cls = 'json-number'
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) {
+        cls = 'json-key'
+      } else {
+        cls = 'json-string'
+      }
+    } else if (/true|false/.test(match)) {
+      cls = 'json-boolean'
+    } else if (/null/.test(match)) {
+      cls = 'json-null'
+    }
+    return `<span class="${cls}">${match}</span>`
+  })
+}
+
 async function loadItems() {
   loading.value = true
   try {
@@ -146,9 +165,7 @@ onMounted(loadItems)
           </div>
           <div class="content-block">
             <div class="block-label">元数据</div>
-            <div class="text-[11px] font-mono text-text-muted whitespace-pre-wrap bg-bg p-4 rounded-lg border border-border">
-              {{ JSON.stringify(filteredMetadata, null, 2) }}
-            </div>
+            <pre class="json-viewer" v-html="syntaxHighlightJson(filteredMetadata)"></pre>
           </div>
         </div>
       </div>
@@ -156,3 +173,35 @@ onMounted(loadItems)
     </div>
   </div>
 </template>
+
+<style scoped>
+.json-viewer {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  background: var(--bg);
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  max-height: 50vh;
+  overflow-y: auto;
+  white-space: pre;
+  color: var(--text-muted);
+}
+.json-viewer :deep(.json-key) {
+  color: #7dd3fc;
+}
+.json-viewer :deep(.json-string) {
+  color: #a5d6a7;
+}
+.json-viewer :deep(.json-number) {
+  color: #ffcc80;
+}
+.json-viewer :deep(.json-boolean) {
+  color: #ce93d8;
+}
+.json-viewer :deep(.json-null) {
+  color: #ef9a9a;
+}
+</style>
