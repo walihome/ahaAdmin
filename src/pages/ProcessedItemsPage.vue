@@ -4,7 +4,7 @@ import { useSupabase } from '@/composables/useSupabase'
 import { useSettings } from '@/composables/useSettings'
 import { useToast } from '@/composables/useToast'
 import { useSourceFilter } from '@/composables/useSourceFilter'
-import { todayStr, getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRankDetail } from '@/composables/useHelpers'
+import { getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRankDetail } from '@/composables/useHelpers'
 import DateNavigator from '@/components/DateNavigator.vue'
 import SourceFilter from '@/components/SourceFilter.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -19,7 +19,7 @@ const selectedItem = ref<any>(null)
 const selectedRawItem = ref<any>(null)
 const loading = ref(false)
 const qaRunning = ref(false)
-const date = ref(todayStr())
+const date = ref('')
 
 const { activeSources, dynamicSourceOptions, filteredItems, toggleSource, toggleAllSources, syncSources } = useSourceFilter(items)
 
@@ -45,6 +45,12 @@ const rawContentHtml = computed(() => {
 async function loadItems() {
   loading.value = true
   try {
+    if (!date.value) {
+      const { data: latest } = await supabase.value
+        .from(`processed_items${settings.tableSuffix}`)
+        .select('snapshot_date').order('snapshot_date', { ascending: false }).limit(1)
+      if (latest?.length) date.value = latest[0].snapshot_date
+    }
     let query = supabase.value
       .from(`processed_items${settings.tableSuffix}`)
       .select('*').order('generated_at', { ascending: false })
