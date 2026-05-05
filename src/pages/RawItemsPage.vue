@@ -23,13 +23,15 @@ const { activeSources, dynamicSourceOptions, filteredItems, toggleSource, toggle
 
 const rawContentHtml = computed(() => {
   if (!selectedItem.value) return ''
-  const text = selectedItem.value.body_text || selectedItem.value.content || ''
+  const content = selectedItem.value._content
+  if (!content) return ''
+  const text = content.enriched_body || content.raw_body || ''
   return marked.parse(text) as string
 })
 
 const filteredMetadata = computed(() => {
   if (!selectedItem.value) return null
-  const { title, body_text, content, ...rest } = selectedItem.value
+  const { title, _content, ...rest } = selectedItem.value
   return rest
 })
 
@@ -75,12 +77,24 @@ async function loadItems() {
 
     if (data && data.length > 0) {
       const ids = data.map((d: any) => d.id)
-      const { data: pData } = await supabase.value
-        .from(`processed_items${settings.tableSuffix}`)
-        .select('item_id')
-        .in('item_id', ids)
-      const pSet = new Set(pData?.map((p: any) => p.item_id) || [])
-      data.forEach((d: any) => { d._processed = pSet.has(d.id) })
+
+      const [pData, contentData] = await Promise.all([
+        supabase.value
+          .from(`processed_items${settings.tableSuffix}`)
+          .select('item_id')
+          .in('item_id', ids),
+        supabase.value
+          .from(`items_content${settings.tableSuffix}`)
+          .select('*')
+          .in('item_id', ids)
+      ])
+
+      const pSet = new Set(pData.data?.map((p: any) => p.item_id) || [])
+      const contentMap = new Map(contentData.data?.map((c: any) => [c.item_id, c]) || [])
+      data.forEach((d: any) => {
+        d._processed = pSet.has(d.id)
+        d._content = contentMap.get(d.id) || null
+      })
     }
 
     rawItems.value = data || []
@@ -117,7 +131,7 @@ onMounted(loadItems)
                 {{ item._processed ? '已完成' : '待处理' }}
               </span>
             </div>
-            <div class="card-preview">{{ item.content }}</div>
+            <div class="card-preview">{{ item._content?.raw_body?.slice(0, 100) || '' }}</div>
             <div class="card-meta">
               <div class="meta-pill">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
