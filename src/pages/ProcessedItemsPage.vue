@@ -8,7 +8,6 @@ import { getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRan
 import DateNavigator from '@/components/DateNavigator.vue'
 import SourceFilter from '@/components/SourceFilter.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { marked } from 'marked'
 
 const { supabase } = useSupabase()
 const { settings } = useSettings()
@@ -17,7 +16,6 @@ const { showToast } = useToast()
 const items = ref<any[]>([])
 const selectedItem = ref<any>(null)
 const selectedRawItem = ref<any>(null)
-const selectedContent = ref<any>(null)
 const loading = ref(false)
 const qaRunning = ref(false)
 const date = ref('')
@@ -25,28 +23,16 @@ const date = ref('')
 const { activeSources, dynamicSourceOptions, filteredItems, toggleSource, toggleAllSources, syncSources } = useSourceFilter(items)
 
 watch(selectedItem, async (newVal) => {
-  if (!newVal) { selectedRawItem.value = null; selectedContent.value = null; return }
+  if (!newVal) { selectedRawItem.value = null; return }
   try {
-    const [rawRes, contentRes] = await Promise.all([
-      supabase.value
-        .from(`raw_items${settings.tableSuffix}`)
-        .select('*').eq('id', newVal.item_id).single(),
-      supabase.value
-        .from(`items_content${settings.tableSuffix}`)
-        .select('*').eq('item_id', newVal.item_id).single()
-    ])
-    selectedRawItem.value = rawRes.data
-    selectedContent.value = contentRes.data
+    const { data, error } = await supabase.value
+      .from(`raw_items${settings.tableSuffix}`)
+      .select('*').eq('id', newVal.item_id).single()
+    if (error) throw error
+    selectedRawItem.value = data
   } catch (e) {
     selectedRawItem.value = null
-    selectedContent.value = null
   }
-})
-
-const rawContentHtml = computed(() => {
-  if (!selectedContent.value) return ''
-  const text = selectedContent.value.enriched_body || selectedContent.value.raw_body || ''
-  return marked.parse(text) as string
 })
 
 async function loadItems() {
@@ -87,10 +73,9 @@ async function submitSingleQA() {
 
     const item = selectedItem.value
     const rawItem = selectedRawItem.value || {}
-    const content = selectedContent.value || {}
     const variables: Record<string, string> = {
       original_title: rawItem.title || item.raw_title || '',
-      original_content: content.enriched_body || content.raw_body || '',
+      original_content: '',
       processed_title: item.processed_title || '',
       category: item.category || '',
       summary: item.summary || '',
@@ -236,10 +221,6 @@ onMounted(loadItems)
               <div class="text-[11px] text-text-muted mb-1 font-mono uppercase tracking-wider">专家洞察 (Expert Insight)</div>
               <div class="block-text italic text-text-muted" style="font-family: system-ui, -apple-system, sans-serif;">"{{ selectedItem.expert_insight }}"</div>
             </div>
-          </div>
-          <div class="content-block" v-if="selectedContent">
-            <div class="block-label">加工前内容</div>
-            <div class="block-text prose prose-invert prose-original max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="rawContentHtml"></div>
           </div>
           <div class="content-block">
             <div class="block-label">加工后内容</div>

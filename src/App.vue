@@ -11,6 +11,7 @@ import SettingsModal from '@/components/SettingsModal.vue'
 
 import RawItemsPage from '@/pages/RawItemsPage.vue'
 import ProcessedItemsPage from '@/pages/ProcessedItemsPage.vue'
+import ItemsContentPage from '@/pages/ItemsContentPage.vue'
 import DisplayItemsPage from '@/pages/DisplayItemsPage.vue'
 import QaPage from '@/pages/QaPage.vue'
 import ScrapersPage from '@/pages/ScrapersPage.vue'
@@ -29,6 +30,7 @@ const showSettings = ref(false)
 
 const rawPage = ref<InstanceType<typeof RawItemsPage>>()
 const processedPage = ref<InstanceType<typeof ProcessedItemsPage>>()
+const contentPage = ref<InstanceType<typeof ItemsContentPage>>()
 const displayPage = ref<InstanceType<typeof DisplayItemsPage>>()
 const qaPage = ref<InstanceType<typeof QaPage>>()
 const scrapersPage = ref<InstanceType<typeof ScrapersPage>>()
@@ -42,6 +44,7 @@ function reloadCurrentTab() {
   const loaders: Record<string, () => void> = {
     raw: () => rawPage.value?.loadItems(),
     processed: () => processedPage.value?.loadItems(),
+    content: () => contentPage.value?.loadItems(),
     display: () => displayPage.value?.loadItems(),
     qa: () => qaPage.value?.loadItems(),
     scrapers: () => scrapersPage.value?.loadItems(),
@@ -114,6 +117,7 @@ onMounted(async () => {
     <div class="main">
       <RawItemsPage v-if="currentTab === 'raw'" ref="rawPage" />
       <ProcessedItemsPage v-if="currentTab === 'processed'" ref="processedPage" />
+      <ItemsContentPage v-if="currentTab === 'content'" ref="contentPage" />
       <DisplayItemsPage v-if="currentTab === 'display'" ref="displayPage" />
       <QaPage v-if="currentTab === 'qa'" ref="qaPage" />
       <ScrapersPage v-if="currentTab === 'scrapers'" ref="scrapersPage" />
