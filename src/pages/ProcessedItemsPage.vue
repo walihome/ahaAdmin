@@ -8,7 +8,6 @@ import { getRankActionLabel, getRankActionClass, getRankDetailLabel, filteredRan
 import DateNavigator from '@/components/DateNavigator.vue'
 import SourceFilter from '@/components/SourceFilter.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { marked } from 'marked'
 
 const { supabase } = useSupabase()
 const { settings } = useSettings()
@@ -34,12 +33,6 @@ watch(selectedItem, async (newVal) => {
   } catch (e) {
     selectedRawItem.value = null
   }
-})
-
-const rawContentHtml = computed(() => {
-  if (!selectedRawItem.value) return ''
-  const text = selectedRawItem.value.body_text || selectedRawItem.value.content || ''
-  return marked.parse(text) as string
 })
 
 async function loadItems() {
@@ -82,7 +75,7 @@ async function submitSingleQA() {
     const rawItem = selectedRawItem.value || {}
     const variables: Record<string, string> = {
       original_title: rawItem.title || item.raw_title || '',
-      original_content: rawItem.content || rawItem.body_text || '',
+      original_content: '',
       processed_title: item.processed_title || '',
       category: item.category || '',
       summary: item.summary || '',
@@ -228,10 +221,6 @@ onMounted(loadItems)
               <div class="text-[11px] text-text-muted mb-1 font-mono uppercase tracking-wider">专家洞察 (Expert Insight)</div>
               <div class="block-text italic text-text-muted" style="font-family: system-ui, -apple-system, sans-serif;">"{{ selectedItem.expert_insight }}"</div>
             </div>
-          </div>
-          <div class="content-block" v-if="selectedRawItem">
-            <div class="block-label">加工前内容</div>
-            <div class="block-text prose prose-invert prose-original max-w-none" style="font-family: system-ui, -apple-system, sans-serif;" v-html="rawContentHtml"></div>
           </div>
           <div class="content-block">
             <div class="block-label">加工后内容</div>
